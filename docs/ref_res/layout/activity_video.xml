@@ -1,0 +1,56 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.cable.dctvcloud.demo.VideoViewUsingFiles"
+    android:layout_width="fill_parent"
+    android:layout_gravity="center"
+    android:layout_height="fill_parent"
+    android:orientation="horizontal">
+
+
+        <LinearLayout android:id="@+id/control"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_gravity="start"
+            android:orientation="vertical"  >
+
+            <Button android:id="@+id/rewind"
+                android:layout_width="100sp"
+                android:layout_height="100sp"
+                android:textColor="#70F"
+                android:text="@string/to_rewind"
+                android:onClick="toRewind"/>
+            <Button android:id="@+id/cancel"
+                android:layout_width="100sp"
+                android:layout_height="100sp"
+                android:textColor="#F0F"
+                android:text="@string/to_cancel"
+                android:onClick="toCancel"/>
+        </LinearLayout>
+        <VideoView
+            android:id="@+id/video_view"
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal" />
+
+    <LinearLayout android:id="@+id/control2"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_gravity="start"
+        android:orientation="vertical"  >
+        <Button android:id="@+id/pause"
+            android:layout_width="100sp"
+            android:layout_height="100sp"
+            android:textColor="#7F0"
+            android:text="@string/to_pause"
+            android:onClick="toPause"/>
+        <Button android:id="@+id/go"
+            android:layout_width="100sp"
+            android:layout_height="100sp"
+            android:textColor="#CC8"
+            android:text="@string/to_continue"
+            android:onClick="toContinue"/>
+
+    </LinearLayout>
+
+
+</FrameLayout>

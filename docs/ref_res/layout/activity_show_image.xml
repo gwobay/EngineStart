@@ -1,0 +1,58 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.cable.dctvcloud.demo.ImageViewUsingFiles"
+    android:layout_width="fill_parent"
+    android:layout_gravity="center"
+    android:layout_height="fill_parent"
+    android:orientation="horizontal">
+
+
+        <LinearLayout android:id="@+id/contro"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_gravity="start"
+            android:orientation="vertical"  >
+
+            <Button android:id="@+id/previous_image"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:textColor="#70F"
+                android:text="@string/to_rewind"
+                android:background="@drawable/previous1"
+                android:onClick="showLast"/>
+
+        </LinearLayout>
+        <ImageView
+            android:id="@+id/image_view"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal" />
+
+    <LinearLayout android:id="@+id/control2"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_gravity="end"
+        android:orientation="vertical"  >
+
+        <Button android:id="@+id/finish"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:textColor="#720"
+            android:background="@drawable/turn_back"
+            android:onClick="byeBye"/>
+
+        <Button android:id="@+id/next_image"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:paddingTop="60dp"
+            android:textColor="#0F9"
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/next1"
+            android:onClick="showNext"/>
+
+
+    </LinearLayout>
+
+
+</FrameLayout>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">全國電子雲圖檔管理</string>
+    <string name="welcome_to_join">歡迎加入全國電子雲</string>
+    <string name="sign_on">登錄</string>
+    <string name="get_directory">瀏覽圖檔目錄</string>
+    <string name="upload_image_file">上傳圖片檔案</string>
+    <string name="upload_video_file">上傳影像檔案</string>
+    <string name="download_file">下載檔案</string>
+    <string name="other">其他</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+        <string name="navigation_drawer_close">Close navigation drawer</string>
+        <string name="show_real_image">顯示全圖</string>
+
+    <string name="play_video">播放影片</string>
+    <string name="to_pause">暫停</string>
+    <string name="to_continue">繼續</string>
+    <string name="to_rewind">重播</string>
+    <string name="to_cancel">取消</string>
+    <string name="action_example">Example action</string>
+
+    <string name="action_settings">設定</string>
+</resources>

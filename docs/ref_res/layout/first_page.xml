@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.cable.dctvcloud.demo.MainActivity"
+    android:id="@+id/first_page"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView android:id="@+id/welcome"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:textColor="#700"
+                android:textSize="50sp"
+                android:textStyle="italic"
+                android:text="@string/welcome_to_join" />
+            </LinearLayout>
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="10dp"
+                android:background="#606060" />
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="10dp"
+            android:background="#606060" />
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="10dp"
+            android:background="#606060" />
+
+
+
+                <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:textSize="40sp"
+                    android:text="@string/get_directory"
+                    android:onClick="getDirectoryTree"/>
+
+
+                    <View
+                        android:layout_width="fill_parent"
+                        android:layout_height="2dp"
+                        android:background="#c0c0c0" />
+
+                        <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:textSize="40sp"
+                android:text="@string/upload_image_file"
+                android:onClick="uploadImageFile"/>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="2dp"
+            android:background="#c0c0c0" />
+
+                        <Button
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:textSize="40sp"
+            android:text="@string/upload_video_file"
+            android:onClick="uploadVideoFile"/>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="2dp"
+            android:background="#c0c0c0" />
+                           <Button
+                                    android:layout_width="match_parent"
+
+                                    android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:textSize="40sp"
+                android:text="@string/download_file"
+                android:onClick="downloadFile"/>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="2dp"
+            android:background="#c0c0c0" />
+    <TextView
+        android:layout_width="match_parent"
+
+        android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:textSize="40sp"
+                 android:text="@string/other" />
+
+</LinearLayout>

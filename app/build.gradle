@@ -19,7 +19,7 @@ android {
     }
     sourceSets {
         main {
-            res.srcDirs = ['src/main/res', 'src/main/res/layout-land', 'src/main/res/values-zh-rTW']
+            res.srcDirs = ['src/main/res', 'src/main/res/layout-land', 'src/main/res/values-zh-rTW', 'src/main/res/values-land', 'src/main/res/values-xxhdpi', 'src/main/res/layout-large', 'src/main/res/layout-xlarge', 'src/main/res/values-xlarge', 'src/main/res/values-w480', 'src/main/res/values-sw480dp', 'src/main/res/values-w480dp', 'src/main/res/drawable']
         }
     }
 }

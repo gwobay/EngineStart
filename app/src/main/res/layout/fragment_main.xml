@@ -4,14 +4,14 @@
     android:layout_height="match_parent"
     tools:context=".MainActivityFragment"
     android:orientation="vertical"
-    android:gravity="center|fill"
-    android:weightSum="1">
+    android:gravity="center|fill" >
 
     <TableLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <TableRow android:layout_width="match_parent"
+        <!--
+        ＜TableRow android:layout_width="match_parent"
             android:layout_height="fill_parent"
             android:layout_weight="1" >
 
@@ -26,12 +26,12 @@
             android:textStyle="italic"
             android:text="@string/app_name" />
 
-        </TableRow>
+        </TableRow　　>　　
+        /-->
 
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1"
             android:layout_gravity="right">
             <TextView android:id="@+id/null_1"
                 android:layout_height="wrap_content"
@@ -62,86 +62,94 @@
         android:layout_gravity="right"></TableLayout>
 
     <TableLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
         android:stretchColumns="@android:string/yes"
-        android:layout_gravity="bottom"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:layout_gravity="top">
 
 
         <TableRow
             android:layout_width="match_parent"
-            android:layout_height="fill_parent">
+            android:layout_height="wrap_content">
 
             <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.5"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/main_page_button_height"
                 android:text="@string/sim_setting"
-                android:textSize="18sp"
+                android:textSize="@dimen/main_page_text_size"
                 android:id="@+id/set_sim"
                 android:onClick="setSimNumber"
-                android:minHeight="120dp" />
+                android:minHeight="@dimen/main_page_button_height"
+                android:layout_weight="0.5"
+                android:layout_gravity="top" />
 
             <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/main_page_button_height"
                 android:minHeight="120dp"
-                android:layout_weight="0.5"
                 android:text="@string/phone_numbers_setting"
-                android:textSize="18sp"
+                android:textSize="@dimen/main_page_text_size"
                 android:id="@+id/add_phone_number"
-                android:onClick="setPhoneNumbers" />
+                android:onClick="setPhoneNumbers"
+                android:layout_weight="0.5"
+                android:layout_gravity="top" />
 
         </TableRow>
 
         <TableRow
             android:layout_width="match_parent"
-            android:layout_height="fill_parent">
+            android:layout_height="wrap_content"
+            android:layout_gravity="top">
 
             <Button
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="@dimen/main_page_button_height"
                 android:minHeight="120dp"
                 android:layout_weight="0.5"
                 android:text="@string/pin_setting"
-                android:textSize="18sp"
+                android:textSize="@dimen/main_page_text_size"
                 android:id="@+id/set_pin"
-                android:onClick="setPinNumber"/>
+                android:onClick="setPinNumber"
+                android:layout_gravity="top" />
 
             <Button
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="@dimen/main_page_button_height"
                 android:minHeight="120dp"
                 android:layout_weight="0.5"
                 android:text="@string/warming_cooling_setting"
-                android:textSize="18sp"
+                android:textSize="@dimen/main_page_text_size"
                 android:id="@+id/warming_cooling"
-                android:onClick="selectWarmerCooler" />
+                android:onClick="selectWarmerCooler"
+                android:theme="@android:style/Holo.ButtonBar"
+                android:layout_gravity="top" />
 
         </TableRow>
 
         <TableRow
             android:layout_width="match_parent"
-            android:layout_height="fill_parent">
+            android:layout_height="wrap_content"
+            android:layout_gravity="top">
 
             <Button
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="@dimen/main_page_button_height"
                 android:minHeight="120dp"
                 android:layout_weight="0.5"
                 android:text="@string/daily_auto_start_setting"
-                android:textSize="18sp"
+                android:textSize="@dimen/main_page_text_size"
                 android:id="@+id/set_start_1time"
-                android:onClick="setAutoStartTime"/>
+                android:onClick="setAutoStartTime"
+                android:layout_gravity="top" />
 
             <Button
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="@dimen/main_page_button_height"
                 android:minHeight="120dp"
                 android:layout_weight="0.5"
                 android:text="@string/daily_multiple_start_setting"
-                android:textSize="18sp"
+                android:textSize="@dimen/main_page_text_size"
                 android:id="@+id/set_multiple_start"
                 android:onClick="setMultipleStart" />
 
@@ -149,27 +157,32 @@
 
         <TableRow
             android:layout_width="match_parent"
-            android:layout_height="fill_parent">
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:baselineAligned="false">
 
             <Button
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="@dimen/main_page_button_height"
                 android:minHeight="120dp"
                 android:layout_weight="0.5"
                 android:text="@string/shut_down_engine"
-                android:textSize="18sp"
+                android:textSize="@dimen/main_page_text_size"
                 android:id="@+id/shut_down"
-                android:onClick="shutDownEngine"/>
+                android:onClick="shutDownEngine"
+                android:layout_gravity="top" />
 
             <Button
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="@dimen/main_page_button_height"
                 android:minHeight="120dp"
                 android:layout_weight="0.5"
                 android:text="@string/start_engine"
-                android:textSize="18sp"
+                android:textSize="@dimen/main_page_text_size"
                 android:id="@+id/start_engine"
-                android:onClick="startEngine" />
+                android:onClick="startEngine"
+                android:layout_gravity="top"
+                android:theme="@android:style/Holo.ButtonBar" />
 
         </TableRow>
 

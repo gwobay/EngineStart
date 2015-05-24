@@ -19,7 +19,7 @@
         <option name="ALLOW_USER_CONFIGURATION" value="false" />
         <option name="MANIFEST_FILE_RELATIVE_PATH" value="/src/main/AndroidManifest.xml" />
         <option name="RES_FOLDER_RELATIVE_PATH" value="/src/main/res" />
-        <option name="RES_FOLDERS_RELATIVE_PATH" value="file://$MODULE_DIR$/src/main/res/layout-land;file://$MODULE_DIR$/src/main/res;file://$MODULE_DIR$/src/main/res/values-zh-rTW" />
+        <option name="RES_FOLDERS_RELATIVE_PATH" value="file://$MODULE_DIR$/src/main/res/values-zh-rTW;file://$MODULE_DIR$/src/main/res/values-land;file://$MODULE_DIR$/src/main/res/drawable;file://$MODULE_DIR$/src/main/res/values-w480dp;file://$MODULE_DIR$/src/main/res/values-xxhdpi;file://$MODULE_DIR$/src/main/res;file://$MODULE_DIR$/src/main/res/layout-large;file://$MODULE_DIR$/src/main/res/layout-land;file://$MODULE_DIR$/src/main/res/layout-xlarge;file://$MODULE_DIR$/src/main/res/values-xlarge" />
         <option name="ASSETS_FOLDER_RELATIVE_PATH" value="/src/main/assets" />
       </configuration>
     </facet>
@@ -51,6 +51,15 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/res" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/res/layout-land" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/res/values-zh-rTW" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/res/values-land" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/res/values-xxhdpi" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/res/layout-large" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/res/layout-xlarge" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/res/values-xlarge" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/res/values-w480" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/res/values-sw480dp" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/res/values-w480dp" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/res/drawable" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/assets" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/aidl" isTestSource="false" />
@@ -86,6 +95,7 @@
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/rs" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/symbols" />
       <excludeFolder url="file://$MODULE_DIR$/build/outputs" />
+      <excludeFolder url="file://$MODULE_DIR$/build/tmp" />
     </content>
     <orderEntry type="jdk" jdkName="Android API 22 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

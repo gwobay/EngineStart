@@ -1,6 +1,5 @@
 package com.prod.intelligent7.engineautostart;
 
-import android.app.ActionBar;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -46,35 +45,29 @@ public class MainActivityFragment extends Fragment {
     Button buildOpenLogButton()
     {
         Button retB=new Button(getActivity());
-        LinearLayout.LayoutParams aParams=new LinearLayout.LayoutParams(mDisplayWidth/2, LinearLayout.LayoutParams.WRAP_CONTENT, 0.5f);
-        aParams.setMargins(2, 2, 2, 2);
+        LinearLayout.LayoutParams aParams=new LinearLayout.LayoutParams(control_width/3, control_height/3, 0.5f);
         retB.setLayoutParams(aParams);
         retB.setGravity(Gravity.LEFT);
-        retB.setCompoundDrawablesWithIntrinsicBounds(R.drawable.open_log, 0, 0, 0);
+        retB.setCompoundDrawablesWithIntrinsicBounds(R.drawable.open_log,0,0,0);
         retB.setText(getResources().getString(R.string.open_log));
-        int textSize=mLogBarHeight/3;
-        if (textSize < 16) textSize=16;
-        retB.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
+        retB.setTextSize(TypedValue.COMPLEX_UNIT_PX, control_height / 6);
         retB.setTextColor(Color.BLACK);
-        retB.setBackgroundColor(Color.YELLOW);//Color.GRAY);
-        retB.setOnClickListener(new ButtonClickListener(OPEN_LOG));
+        retB.setBackgroundColor(Color.GRAY);
+        retB.setOnClickListener(new ButtonClickListener(SET_SIMM));
         return retB;
     }
     Button buildClearLogButton()
     {
         Button retB=new Button(getActivity());
-        LinearLayout.LayoutParams aParams=new LinearLayout.LayoutParams(mDisplayWidth/2, LinearLayout.LayoutParams.WRAP_CONTENT, 0.5f);
-        aParams.setMargins(2, 2, 2, 2);
+        LinearLayout.LayoutParams aParams=new LinearLayout.LayoutParams(control_width/3, control_height/3, 0.5f);
         retB.setLayoutParams(aParams);
         retB.setGravity(Gravity.RIGHT);
-        retB.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.clean_log, 0);
+        retB.setCompoundDrawablesWithIntrinsicBounds(0,0,R.drawable.clear_log,0);
         retB.setText(getResources().getString(R.string.clear_log));
-        int textSize=mLogBarHeight/3;
-        if (textSize < 16) textSize=16;
-        retB.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
+        retB.setTextSize(TypedValue.COMPLEX_UNIT_PX, control_height / 8);
         retB.setTextColor(Color.BLACK);
-        retB.setBackgroundColor(Color.YELLOW);
-        retB.setOnClickListener(new ButtonClickListener(CLEAN_LOG));
+        retB.setBackgroundColor(Color.GRAY);
+        retB.setOnClickListener(new ButtonClickListener(SET_SIMM));
         return retB;
     }
 
@@ -92,15 +85,11 @@ public class MainActivityFragment extends Fragment {
     void constructButton(Button retB, String text)
     {
         LinearLayout.LayoutParams aParams=new LinearLayout.LayoutParams(control_width, control_height, 0.5f);
-        aParams.setMargins(2, 3, 2, 3);
         retB.setLayoutParams(aParams);
-        retB.setGravity(Gravity.CENTER);
         retB.setText(text);
-        int textSize=control_height / 8;
-        if (textSize < 28) textSize=28;
-        retB.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
-        //retB.setTextColor(Color.RED);
-        //retB.setBackgroundColor(0x847fffb4);
+        retB.setTextSize(TypedValue.COMPLEX_UNIT_PX, control_height / 6);
+        retB.setTextColor(Color.BLACK);
+        retB.setBackgroundColor(Color.GRAY);
     }
     Button buildSIMButton()
     {
@@ -164,20 +153,16 @@ public class MainActivityFragment extends Fragment {
     LinearLayout buildControlButtons1Pair(int whichPair, boolean vertically)
     {
         LinearLayout onePair=new LinearLayout(getActivity());
-        LinearLayout.LayoutParams aParams=null;
         if (vertically) {
-            aParams=new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.MATCH_PARENT, 0.5f);
+            onePair.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT, 0.5f));
             onePair.setOrientation(LinearLayout.VERTICAL);//0HORIZONTAL, 1Vertical);
         } else
         {
-            aParams=new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT, 0.5f);
+            onePair.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT, 0.5f));
           onePair.setOrientation(LinearLayout.HORIZONTAL);//0HORIZONTAL, 1Vertical);
         }
-        //aParams.setMargins(2, 0, 2, -1);
-        onePair.setLayoutParams(aParams);
-        onePair.setGravity(Gravity.CENTER);
 
         //id.setGravity(1);
         switch (whichPair)
@@ -222,7 +207,6 @@ public class MainActivityFragment extends Fragment {
     boolean isLandScape;
     private int mDisplayWidth;
     private int mDisplayHeight;
-    private int mLogBarHeight;
     void getMyScreenSize()
     {
         //Display display = getWindowManager().getDefaultDisplay();
@@ -234,23 +218,8 @@ public class MainActivityFragment extends Fragment {
         mDisplayHeight = size.y;
         isLandScape=(mDisplayWidth>mDisplayHeight);
         //If you're not in an Activity you can get the default Display via WINDOW_SERVICE:
-        TypedValue tv = new TypedValue();
-        int mActionBarHeight=0;
-        if (getActivity().getTheme().resolveAttribute(
-                android.R.attr.actionBarSize, tv, true)) {
-            mActionBarHeight = TypedValue.complexToDimensionPixelSize(
-                    tv.data, getActivity().getResources().getDisplayMetrics());
-        }
-        mDisplayHeight -= mActionBarHeight ;
-        mLogBarHeight = mActionBarHeight*2/3;
-        if (mLogBarHeight < 10) mLogBarHeight=10;
-        mDisplayHeight -= mLogBarHeight;
-        int nC=2, nR=4; //# of col. row
-        if (isLandScape) {nC=4; nR=2;}
-        mDisplayHeight -= (8*nR);
-        mDisplayWidth -= 4*nC;
-        control_height=mDisplayHeight/nR;
-        control_width=mDisplayWidth/nC;
+        control_height=isLandScape?mDisplayHeight*8/10/2:mDisplayHeight*8/10/4;
+        control_width=isLandScape?mDisplayWidth*8/10/4:mDisplayWidth*8/10/2;
     }
 
 
@@ -326,17 +295,10 @@ public class MainActivityFragment extends Fragment {
 
        // return sv;
 
-         return retV;
+        return retV;
        // return inflater.inflate(R.layout.fragment_main, container, false);
     }
-    void checkLog()
-    {
-        Toast.makeText(getActivity(), "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
-    }
-    void cleanLog()
-    {
-        Toast.makeText(getActivity(), "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
-    }
+
     void setSimNumber()
     {
         Toast.makeText(getActivity(), "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
@@ -377,8 +339,6 @@ public class MainActivityFragment extends Fragment {
         Toast.makeText(getActivity(), "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
     }
     String mCommand;
-    public static final String OPEN_LOG="open_log";
-    public static final String CLEAN_LOG="clean_logr";
     public static final String SET_SIMM="set_simm_number";
     public static final String SET_PIN="set_pin_code";
     public static final String SET_PHONES="set_phone_numbers";
@@ -424,12 +384,6 @@ public class MainActivityFragment extends Fragment {
                 case CMD_STOP_NOW:
                     stopNow();
                     break;
-
-                case OPEN_LOG:
-                    checkLog();
-                    break;
-                case CLEAN_LOG:
-                    cleanLog();
                 default:
                     break;
             }

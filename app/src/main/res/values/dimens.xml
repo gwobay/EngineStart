@@ -3,6 +3,8 @@
     <dimen name="activity_horizontal_margin">6dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
+    <dimen name="log_bar_height">0dp</dimen>
+
     <dimen name="main_page_text_size">30dp</dimen>
     <dimen name="main_page_button_width">155dp</dimen>
     <dimen name="main_page_button_height">100dp</dimen>

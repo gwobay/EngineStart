@@ -244,6 +244,7 @@ public class MainActivityFragment extends Fragment {
         mDisplayHeight -= mActionBarHeight ;
         mLogBarHeight = mActionBarHeight*2/3;
         if (mLogBarHeight < 10) mLogBarHeight=10;
+        mLogBarHeight=0; //now use menu item
         mDisplayHeight -= mLogBarHeight;
         int nC=2, nR=4; //# of col. row
         if (isLandScape) {nC=4; nR=2;}
@@ -264,7 +265,7 @@ public class MainActivityFragment extends Fragment {
         retV.setOrientation(LinearLayout.VERTICAL);//0HORIZONTAL, 1Vertical);
         //id.setGravity(1);//center_horizontal
         retV.setLayoutParams(llWrapParams);
-        retV.addView(buildLogBar());
+        //retV.addView(buildLogBar()); //now in menu item
         retV.addView(buildControlButtons());
         /*
         if (isLandScape){

@@ -5,9 +5,9 @@
 
     <item android:id="@+id/action_on_log"
         android:title="@string/action_log"
-        android:icon="@drawable/open_log"
+        android:icon="@drawable/open_log42x42"
         android:orderInCategory="1"
-        app:showAsAction="ifRoom|withText" >
+        app:showAsAction="ifRoom|withText">
 
         <menu>
             <item android:id="@+id/action_get_sim"
@@ -25,9 +25,10 @@
             <item android:id="@+id/action_clean_log"
                 android:title="@string/action_clean_log" />
         </menu>
+
     </item>
-    <item android:id="@+id/action_settings"
+    <!-- item android:id="@+id/action_settings"
         android:title="@string/action_settings"
         android:orderInCategory="100"
-        app:showAsAction="never" />
+        app:showAsAction="never" /-->
 </menu>

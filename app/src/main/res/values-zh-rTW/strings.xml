@@ -11,6 +11,14 @@
     <string name="daily_multiple_start_setting">每日循环启动設定</string>
     <string name="shut_down_engine">立即关闭启动</string>
     <string name="start_engine">立即启动</string>
+    <string name="action_log">车载机记录</string>
+    <string name="action_get_sim">查询号码</string>
+    <string name="action_get_pin">查询密码</string>
+    <string name="action_get_phones">查询手机号码</string>
+    <string name="action_get_recent1">查询最近1筆启动记录</string>
+    <string name="action_get_recent10">查询最近10筆记录</string>
+    <string name="action_get_last_failed">查询最近失敗记录</string>
+    <string name="action_clean_log">清除启动记录</string>
     <string name="check_log">启动记录文件</string>
     <string name="open_log">查询最近启动记录</string>
     <string name="clear_log">清除启动记录</string>

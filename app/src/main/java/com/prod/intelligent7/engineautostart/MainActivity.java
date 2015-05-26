@@ -1,13 +1,18 @@
 package com.prod.intelligent7.engineautostart;
 
 
+import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Handler;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.view.ActionProvider;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -21,17 +26,20 @@ import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.Toolbar;
 
+import java.util.Date;
 
-public class MainActivity extends AppCompatActivity {
+
+public class MainActivity extends AppCompatActivity
+    implements  GetTextDialogFragment.GetTextDialogListener
+{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
     }
 
     @Override
@@ -65,44 +73,6 @@ public class MainActivity extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
-        /*
-        LayoutInflater baseInflater = //getLayoutInflater();
-                (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-        baseInflater.setFactory(new LayoutInflater.Factory() {
-            public View onCreateView(String name, Context context,
-                                     AttributeSet attrs) {
-
-                if (name.equalsIgnoreCase(
-                        "com.android.internal.view.menu.IconMenuItemView")) {
-                    try {
-                        LayoutInflater li = LayoutInflater.from(context);
-                        final View view = li.createView(name, null, attrs);
-                        new Handler().post(new Runnable() {
-                            public void run() {
-                                // set the background drawable if you want that
-                                //or keep it default -- either an image, border
-                                //gradient, drawable, etc.
-                                //view.setBackgroundResource(R.drawable.myimage);
-                                ((TextView) view).setTextSize(20);
-
-                                // set the text color
-                                //Typeface face = Typeface.createFromAsset(
-                                //getAssets(),"OldeEnglish.ttf");
-                                //((TextView) view).setTypeface(face);
-                                ((TextView) view).setTextColor(Color.RED);
-                            }
-                        });
-                        return view;
-                    } catch (InflateException e) {
-                        //Handle any inflation exception here
-                    } catch (ClassNotFoundException e) {
-                        //Handle any ClassNotFoundException here
-                    }
-                }
-                return null;
-            }
-        }); */
         return true;
     }
 
@@ -156,6 +126,196 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    public String getSim()
+    {
+        String retSim=null;
 
+        return retSim;
+    }
+
+    public String getPin()
+    {
+        String retPin=null;
+
+        return retPin;
+    }
+
+    void saveOneBootScheme(Date when)
+    {
+
+    }
+
+    void saveMultipleBootScheme(Date toStart, Date toEnd, long period) //have to create service to monitor when to send command out
+    {
+
+    }
+
+
+    void putInLog(String command)
+    {
+        //ToDo add time stamp and save it to log table with flag=SUCCESS (1) or FAILED (-1) or other code
+        //also add Sim and Phone number, in case this work for multiple SIM and Phones
+    }
+
+    public void onDialogPositiveClick(DialogFragment dialog);
+    public void onDialogNegativeClick(DialogFragment dialog);
+
+    String mCommand;
+    void checkLog()
+    {
+        Toast.makeText(this, "PENDING construction of " + mCommand, Toast.LENGTH_LONG).show();
+    }
+    void cleanLog()
+    {
+        Toast.makeText(this, "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
+    }
+    void setSimNumber()
+    {
+        GetTextDialogFragment simFragment=new GetTextDialogFragment();
+        Bundle aBundle=new Bundle();
+        aBundle.putInt(GetTextDialogFragment.DATA_ENTRY_LAYOUT, R.layout.get_sim);
+        simFragment.setArguments(aBundle);
+        simFragment.show(getSupportFragmentManager(), "getSIM");
+        //Toast.makeText(this, "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
+    }
+
+    void setPin() //make sure only 4 Digits
+    //steps : first send the phone number to booster with 0000 PIN and then update the new PIN
+    {
+        Toast.makeText(this, "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
+    }
+
+    void setPhones()
+    {
+        Toast.makeText(this, "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
+    }
+
+    void selectWarmerCooler()
+    {
+        Toast.makeText(this, "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
+    }
+
+    void setOneBoot()
+    {
+        Toast.makeText(this, "PENDING construction of " + mCommand, Toast.LENGTH_LONG).show();
+    }
+
+    void setMultipleBoot()
+    {
+        Toast.makeText(this, "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
+    }
+
+    void startNow()
+    {
+        Toast.makeText(this, "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
+    }
+
+    void stopNow()
+    {
+        Toast.makeText(this, "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
+    }
+    
+    public static final String OPEN_LOG="open_log";
+    public static final String CLEAN_LOG="clean_logr";
+    public static final String SET_SIMM="set_simm_number";
+    public static final String SET_PIN="set_pin_code";
+    public static final String SET_PHONES="set_phone_numbers";
+    public static final String SET_WARMER="select_warmer_cooler";
+    public static final String SET_ONE_BOOT="set_one_boot";
+    public static final String SET_MULTIPLE_BOOT="set_multiple_boot";
+    public static final String CMD_START_NOW="cmd_start_now";
+    public static final String CMD_STOP_NOW="set_stop_now";
+    
+    public void executeCommand(String command)
+    {
+        mCommand=command;
+        switch(command)
+        {
+            case SET_SIMM:
+                setSimNumber();
+                break;
+            case SET_PIN:
+                setPin();
+                break;
+            case SET_WARMER:
+                selectWarmerCooler();
+                break;
+            case SET_PHONES:
+                setPhones();
+                break;
+            case SET_ONE_BOOT:
+                setOneBoot();
+                break;
+            case SET_MULTIPLE_BOOT:
+                setMultipleBoot();
+                break;
+            case CMD_START_NOW:
+                startNow();
+                break;
+            case CMD_STOP_NOW:
+                stopNow();
+                break;
+
+            case OPEN_LOG:
+                checkLog();
+                break;
+            case CLEAN_LOG:
+                cleanLog();
+            default:
+                break;
+        }
+
+    }
+
+    class MyDataBaseJob {
+
+    }
+
+
+
+    void nullFunction()
+
+    {
+
+        /*
+        LayoutInflater baseInflater = //getLayoutInflater();
+                (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+        baseInflater.setFactory(new LayoutInflater.Factory() {
+            public View onCreateView(String name, Context context,
+                                     AttributeSet attrs) {
+
+                if (name.equalsIgnoreCase(
+                        "com.android.internal.view.menu.IconMenuItemView")) {
+                    try {
+                        LayoutInflater li = LayoutInflater.from(context);
+                        final View view = li.createView(name, null, attrs);
+                        new Handler().post(new Runnable() {
+                            public void run() {
+                                // set the background drawable if you want that
+                                //or keep it default -- either an image, border
+                                //gradient, drawable, etc.
+                                //view.setBackgroundResource(R.drawable.myimage);
+                                ((TextView) view).setTextSize(20);
+
+                                // set the text color
+                                //Typeface face = Typeface.createFromAsset(
+                                //getAssets(),"OldeEnglish.ttf");
+                                //((TextView) view).setTypeface(face);
+                                ((TextView) view).setTextColor(Color.RED);
+                            }
+                        });
+                        return view;
+                    } catch (InflateException e) {
+                        //Handle any inflation exception here
+                    } catch (ClassNotFoundException e) {
+                        //Handle any ClassNotFoundException here
+                    }
+                }
+                return null;
+            }
+        }); */
+
+    }
 
 }

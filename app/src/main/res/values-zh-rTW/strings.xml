@@ -23,6 +23,11 @@
     <string name="open_log">查询最近启动记录</string>
     <string name="clear_log">清除启动记录</string>
     <!-- 0523 /-->
+    <string name="confirm">確定</string>
+    <string name="send">送出</string>
+    <string name="cancel">取消</string>
+    <!-- for action dialogs /-->
+
     <string name="abc_action_bar_home_description">转到主屏幕</string>
     <string name="abc_action_bar_home_description_format">%1$s：%2$s</string>
     <string name="abc_action_bar_home_subtitle_description_format">%1$s - %2$s：%3$s</string>

@@ -267,116 +267,11 @@ public class MainActivityFragment extends Fragment {
         retV.setLayoutParams(llWrapParams);
         //retV.addView(buildLogBar()); //now in menu item
         retV.addView(buildControlButtons());
-        /*
-        if (isLandScape){
-
-        } else
-        {
-
-        }
-        mColumn=0;
-        mRow=1;
-        String pwd=getResources().getString(R.string.pass_word_key);
-        mSavedCode=getArguments().getString(pwd);
-        mBkpCode=getArguments().getString(BKP_PASSWORD);
-        char a='1';
-        String pgTitle=getResources().getString(R.string.enter_password);//"Enter Password to Log in";
-        newUser = false;
-        if (mSavedCode == null || mSavedCode.length() < 4)
-        {
-            id.addView(idLabel());
-            id.addView(idLine());
-            a='A';
-            mRow=0;
-            pgTitle=getResources().getString(R.string.setup_new_account);
-            newUser=true;
-        }
-
-        id.addView(passwdLabel());
-
-        id.addView(passwordLine());
-        LinearLayout tbHome=new TableLayout(mContext);//LinearLayout(mContext);
-        tbHome.setOrientation(0);//0HORIZONTAL, 1Vertical);
-        //tbHome.addView(passwordLine());
-        tbHome.setGravity(17);
-        mTable=showNButton(3,a);
-        tbHome.addView(mTable);
-        id.addView(tbHome);
-        //GifViewer aGif=new GifViewer(getActivity(), R.drawable.ninja_turtle);
-        View rootView = null;
-        int page=R.layout.gif_view_port;
-        rootView=inflater.inflate(page, id, false);
-        ImageView img1=(ImageView)(rootView.findViewById(R.id.gif_view));
-        img1.setBackgroundResource(R.drawable.nija_frames);
-        kpAnimation = (AnimationDrawable) img1.getBackground();
-        // Start the animation (looped playback by default).
-        kpAnimation.start();
-
-        sv.addView(id);
-        if (mRow==1)
-            mCurrentText=mPasswords[0];
-        else
-            mCurrentText=mAlpha;
-        showFocusColor(mCurrentText);
-        mRoot=tbHome;
-        mActivity.setTitle(pgTitle);
-        return sv;
-
-*/
-       // sv.addView(retV);
-
-       // return sv;
 
          return retV;
        // return inflater.inflate(R.layout.fragment_main, container, false);
     }
-    void checkLog()
-    {
-        Toast.makeText(getActivity(), "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
-    }
-    void cleanLog()
-    {
-        Toast.makeText(getActivity(), "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
-    }
-    void setSimNumber()
-    {
-        Toast.makeText(getActivity(), "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
-    }
 
-    void setPin()
-    {
-        Toast.makeText(getActivity(), "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
-    }
-
-    void setPhones()
-    {
-        Toast.makeText(getActivity(), "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
-    }
-
-    void selectWarmerCooler()
-    {
-        Toast.makeText(getActivity(), "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
-    }
-
-    void setOneBoot()
-    {
-        Toast.makeText(getActivity(), "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
-    }
-
-    void setMultipleBoot()
-    {
-        Toast.makeText(getActivity(), "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
-    }
-
-    void startNow()
-    {
-        Toast.makeText(getActivity(), "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
-    }
-
-    void stopNow()
-    {
-        Toast.makeText(getActivity(), "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
-    }
     String mCommand;
     public static final String OPEN_LOG="open_log";
     public static final String CLEAN_LOG="clean_logr";
@@ -398,43 +293,7 @@ public class MainActivityFragment extends Fragment {
         }
         public void onClick(View v)
         {
-            mCommand=toDo;
-            switch(toDo)
-            {
-                case SET_SIMM:
-                    setSimNumber();
-                    break;
-                case SET_PIN:
-                    setPin();
-                    break;
-                case SET_WARMER:
-                    selectWarmerCooler();
-                    break;
-                case SET_PHONES:
-                    setPhones();
-                    break;
-                case SET_ONE_BOOT:
-                    setOneBoot();
-                    break;
-                case SET_MULTIPLE_BOOT:
-                    setMultipleBoot();
-                    break;
-                case CMD_START_NOW:
-                    startNow();
-                    break;
-                case CMD_STOP_NOW:
-                    stopNow();
-                    break;
-
-                case OPEN_LOG:
-                    checkLog();
-                    break;
-                case CLEAN_LOG:
-                    cleanLog();
-                default:
-                    break;
-            }
-
+            ((MainActivity )getActivity()).executeCommand(toDo);
         }
     }
 }

@@ -54,6 +54,7 @@
 
 
     <!-- get sim, pin, phone /-->
+    <string name="bad_data_entry">输入錯誤! 請更正!</string>
     <string name="label_get_sim">输入 SIMM</string>
     <string name="label_get_pin">输入密码</string>
     <string name="label_get_phone">输入手机号码</string>

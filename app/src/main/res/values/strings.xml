@@ -36,6 +36,7 @@
     <!-- end of label     /-->
 
     <!-- get sim, pin, phone /-->
+    <string name="bad_data_entry">Bad Data! Please Correct It!</string>
     <string name="label_get_sim">ENTER_SIMM</string>
     <string name="label_get_pin">ENTER_PIN</string>
     <string name="label_get_phone">ENTER_PHONE</string>

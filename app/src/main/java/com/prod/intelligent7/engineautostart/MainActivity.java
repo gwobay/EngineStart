@@ -3,8 +3,9 @@ package com.prod.intelligent7.engineautostart;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
@@ -181,6 +182,8 @@ public class MainActivity extends AppCompatActivity
     {
         Toast.makeText(this, "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
     }
+
+    public static Fragment mainUI=null;
     void setSimNumber()
     {
         //GetTextDialogFragment simFragment=new GetTextDialogFragment();
@@ -191,11 +194,12 @@ public class MainActivity extends AppCompatActivity
         simFragment.setArguments(aBundle);
 
         //simFragment.show(getSupportFragmentManager(), "getSIM");
-        FragmentManager fragmentManager = getFragmentManager();
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        mainUI = fragmentManager.findFragmentById(R.id.main_content_fragment);
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.addToBackStack("MAIN_UI");
+        fragmentTransaction.addToBackStack(null);//"MAIN_UI");
        // fragmentManager.findFragmentById(R.id.main_content_frame);
-        fragmentTransaction.replace(R.id.container, simFragment).commit();
+        fragmentTransaction.replace(R.id.container, simFragment, "MAIN_UI").commit();
         //Toast.makeText(this, "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
     }
 

@@ -3,6 +3,8 @@ package com.prod.intelligent7.engineautostart;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
@@ -157,8 +159,18 @@ public class MainActivity extends AppCompatActivity
         //also add Sim and Phone number, in case this work for multiple SIM and Phones
     }
 
-    public void onDialogPositiveClick(DialogFragment dialog);
-    public void onDialogNegativeClick(DialogFragment dialog);
+    public void onDialogPositiveClick(DialogFragment dialog)
+    {
+        if (dialog.getArguments()==null) return;
+        String[] returnData=dialog.getArguments().getStringArray(GetTextDialogFragment.DATA_ENTERED);
+        if (returnData==null)return;
+
+
+    }
+    public void onDialogNegativeClick(DialogFragment dialog)
+    {
+
+    };
 
     String mCommand;
     void checkLog()
@@ -171,11 +183,19 @@ public class MainActivity extends AppCompatActivity
     }
     void setSimNumber()
     {
-        GetTextDialogFragment simFragment=new GetTextDialogFragment();
+        //GetTextDialogFragment simFragment=new GetTextDialogFragment();
+        ReadSimFragment simFragment=new ReadSimFragment();
         Bundle aBundle=new Bundle();
-        aBundle.putInt(GetTextDialogFragment.DATA_ENTRY_LAYOUT, R.layout.get_sim);
+        //aBundle.putString(GetTextDialogFragment.DATA_ENTRY_LAYOUT, R.layout.get_sim);
+        aBundle.putString("PREFERENCE_FILE_NAME", getApplication().getPackageName()+"profile");
         simFragment.setArguments(aBundle);
-        simFragment.show(getSupportFragmentManager(), "getSIM");
+
+        //simFragment.show(getSupportFragmentManager(), "getSIM");
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.addToBackStack("MAIN_UI");
+       // fragmentManager.findFragmentById(R.id.main_content_frame);
+        fragmentTransaction.replace(R.id.container, simFragment).commit();
         //Toast.makeText(this, "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
     }
 

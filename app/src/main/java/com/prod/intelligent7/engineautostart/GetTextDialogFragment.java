@@ -60,8 +60,11 @@ public class GetTextDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         // Build the dialog and set up the button click handlers
+
         mViewFromXml=null;
         int xmlId=getArguments().getInt(DATA_ENTRY_LAYOUT, 0);
+        //caller should provide the view id following the command String e.g., SET_SIM<z>xml view ID
+        // //the label name string and eidtText field id in pair; e.g., sim_card<z>edit text field ID
         if (xmlId > 0){
             mViewFromXml=getActivity().getLayoutInflater().inflate(xmlId, null);
         }

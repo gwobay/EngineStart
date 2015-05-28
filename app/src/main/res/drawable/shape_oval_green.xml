@@ -3,7 +3,7 @@
     
     android:shape="oval"  >
     <corners
-        android:radius="20dp" />
+        android:radius="30px" />
         <!--  
         android:topLeftRadius="integer"
         android:topRightRadius="integer"

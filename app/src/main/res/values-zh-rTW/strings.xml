@@ -60,7 +60,8 @@
     <string name="label_get_phone">輸入手机号码</string>
 
     <string name="wrong_pin">錯誤密码</string>
-
+    <string name="numeric_pad">輸入鍵盤</string>
+    <string name="confirm_this">確認</string>
     <!-- end sim, pin, phone /-->
 
 

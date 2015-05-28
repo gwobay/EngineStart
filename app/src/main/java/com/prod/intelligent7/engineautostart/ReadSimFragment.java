@@ -445,6 +445,7 @@ public class ReadSimFragment extends Fragment {
 			aBt.setBackgroundResource(R.drawable.shape_oval_orange);*/
 		keyPad.addView(aBt);
 
+
 		return keyPad;
 	}
 
@@ -464,7 +465,7 @@ public class ReadSimFragment extends Fragment {
 				//if (a > '9') m=9;
 				//char c=(char)(a+m*i);
 				char c=(char)('0'+(m*i+1));
-				keyPad.addView(oneRow(c, 3, keyPadWidth/4, keyPadWidth/4));
+				keyPad.addView(oneRow(c, 3, keyPadWidth/4*15/10, keyPadWidth/4));
 			}
 		 //add last row in number key pad
 
@@ -581,12 +582,16 @@ public class ReadSimFragment extends Fragment {
 		editor.putString("MY_SIM", simCode);
 		editor.commit();
 
-		((MainActivity)getActivity()).setDefaultTitle();
-		getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
-		getActivity().getSupportFragmentManager().popBackStackImmediate();
-
+        backToMain();
 	}
-	
+
+    void backToMain()
+    {
+        ((MainActivity)getActivity()).setDefaultTitle();
+        getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
+        getActivity().getSupportFragmentManager().popBackStackImmediate();
+
+    }
 
 	 @Override
 	    public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -649,7 +654,30 @@ public class ReadSimFragment extends Fragment {
 		 if (isLandScape) keyPad.addView(setWideKeyPadButtons());
 		 else
 			 keyPad.addView(setKeyPadButtons());
+         Button bx=new Button(getActivity());
+         int columnSize=30;
+         if (isLargeScreen) {
+             columnSize=30;
+             bx.setBackgroundResource(R.drawable.shape_oval_orange_large);
+         }
+         else {
+             columnSize=20;
+              bx.setBackgroundResource(R.drawable.shape_oval_orange);
+         }
+         bx.setLayoutParams(new LinearLayout.LayoutParams(columnSize+10,
+                                    LinearLayout.LayoutParams.MATCH_PARENT, 0.5f));
+         bx.setGravity(Gravity.CENTER_VERTICAL);
+         bx.setTextSize(columnSize);
+         bx.setTextColor(Color.RED);
+         bx.setText(getActivity().getResources().getString(R.string.back_to_main));
+         //bx.setTextDirection();
+         bx.setOnClickListener(new Button.OnClickListener() {
+             public void onClick(View v) {
+                 backToMain();
+             }
+         });
 
+         keyPad.addView(bx);
 		 myUI.addView(keyPad);
 		 	//GifViewer aGif=new GifViewer(getActivity(), R.drawable.ninja_turtle);
 		 /*

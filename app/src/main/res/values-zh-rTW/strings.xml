@@ -25,6 +25,8 @@
     <!-- 0523 /-->
     <string name="confirm">確定</string>
     <string name="send">送出</string>
+    <string name="back_to_main">转回主屏幕</string>
+
     <string name="cancel">取消</string>
     <!-- for action dialogs /-->
     <!-- for command key /-->

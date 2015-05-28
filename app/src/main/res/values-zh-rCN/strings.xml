@@ -51,7 +51,7 @@
     <string name="label_start_now">label_START_NOW</string>
     <string name="label_stop_now">label_STOP_NOW</string>
     <!-- end of label     /-->
-
+    <string name="back_to_main">转回主屏幕</string>
     <string name="numeric_pad">輸入鍵盤</string>
     <string name="confirm_this">確認</string>
     <!-- get sim, pin, phone /-->

@@ -27,6 +27,42 @@
     <string name="send">送出</string>
     <string name="cancel">取消</string>
     <!-- for action dialogs /-->
+    <!-- for command key /-->
+    <string name="cmd_open_log">OPEN_LOG</string>
+    <string name="cmd_clean_log">CLEAN_LOG</string>
+    <string name="cmd_set_simm">SET_SIMM</string>
+    <string name="cmd_set_pin">SET_PIN</string>
+    <string name="cmd_set_phone">SET_PHONES</string>
+    <string name="cmd_select_warmer_cooler">SET_WARMER</string>
+    <string name="cmd_set_single_boot">SET_ONE_BOOT</string>
+    <string name="cmd_set_multiple_boot">SET_MULTIPLE_BOOT</string>
+    <string name="cmd_start_now">CMD_START_NOW</string>
+    <string name="cmd_stop_now">CMD_STOP_NOW</string>
+    <!-- end command key /-->
+    <!-- data entry field label /-->
+    <string name="label_open_log">OPEN_LOG</string>
+    <string name="label_clean_log">CLEAN_LOG</string>;
+    <string name="label_set_simm">輸入SIMM </string>;
+    <string name="label_set_pin">輸入PIN</string>
+    <string name="label_set_phone">輸入主控手機電話</string>
+    <string name="label_select_warmer_cooler">SET_WARMER</string>;
+    <string name="label_set_single_boot">SET_ONE_BOOT</string>
+    <string name="label_set_multiple_boot">SET_MULTIPLE_BOOT</string>;
+    <string name="label_start_now">label_START_NOW</string>
+    <string name="label_stop_now">label_STOP_NOW</string>
+    <!-- end of label     /-->
+
+
+    <!-- get sim, pin, phone /-->
+    <string name="bad_data_entry">输入錯誤! 請更正!</string>
+    <string name="label_get_sim">輸入SIMM</string>
+    <string name="label_get_pin">輸入密码</string>
+    <string name="label_get_phone">輸入手机号码</string>
+
+    <string name="wrong_pin">錯誤密码</string>
+
+    <!-- end sim, pin, phone /-->
+
 
     <string name="abc_action_bar_home_description">转到主屏幕</string>
     <string name="abc_action_bar_home_description_format">%1$s：%2$s</string>

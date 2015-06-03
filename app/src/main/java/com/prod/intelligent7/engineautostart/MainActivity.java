@@ -3,6 +3,8 @@ package com.prod.intelligent7.engineautostart;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -39,9 +41,12 @@ public class MainActivity extends AppCompatActivity
     implements  GetTextDialogFragment.GetTextDialogListener
 {
 
+    static String application_name="MainActivity";
+    static String package_name="com.prod.intelligent7.engineautostart";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        application_name=getResources().getString(R.string.app_name_en);
         setContentView(R.layout.activity_main);
     }
 
@@ -66,7 +71,7 @@ public class MainActivity extends AppCompatActivity
             TextView textViewTitle = (TextView) myBarView.findViewById(R.id.myActionBarTitle);
             textViewTitle.setText(newTitle);
             if (textSize > 0) {
-                if (textSize > 40) textSize = 40;
+                if (textSize > 30) textSize = 30;
                 if (textSize < 10) textSize = 10;
                 textViewTitle.setTextSize(textSize);
             }
@@ -214,24 +219,92 @@ public class MainActivity extends AppCompatActivity
        // fragmentManager.findFragmentById(R.id.main_content_frame);
         fragmentTransaction.replace(R.id.container, simFragment, "MAIN_UI").commit();
         //Toast.makeText(this, "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
-        pageTitle=getResources().getString(R.string.sim_setting);
+        if (getSavedValue(SET_SIM).charAt(0)=='-')
+            pageTitle=getResources().getString(R.string.sim_setting);
+        else
+            pageTitle=getResources().getString(R.string.sim_change);
         setTitle(pageTitle);
     }
 
     void setPin() //make sure only 4 Digits
     //steps : first send the phone number to booster with 0000 PIN and then update the new PIN
     {
-        Toast.makeText(this, "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
+        ReadPinFragment pinFragment=new ReadPinFragment();
+        Bundle aBundle=new Bundle();
+        aBundle.putString("PREFERENCE_FILE_NAME", getApplication().getPackageName()+".profile");
+        pinFragment.setArguments(aBundle);
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        mainUI = fragmentManager.findFragmentById(R.id.main_content_fragment);
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.addToBackStack(null);//"MAIN_UI");
+        fragmentTransaction.replace(R.id.container, pinFragment, "MAIN_UI").commit();
+        if (getSavedValue(SET_PIN).charAt(0)=='-')
+            pageTitle=getResources().getString(R.string.pin_setting);
+        else
+            pageTitle=getResources().getString(R.string.pin_change);
+
+        setTitle(pageTitle);
     }
 
+    public void savePhoneNumber(View v)
+    {
+        ((ReadPhoneFragment)mCurrentFragment).saveData();
+    }
+    public void closePhoneFragment(View v)
+    {
+        ((ReadPhoneFragment)mCurrentFragment).backToMain();
+    }
+    MySimpleFragment mCurrentFragment;
     void setPhones()
     {
-        Toast.makeText(this, "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
+        ReadPhoneFragment phoneFragment=new ReadPhoneFragment();
+        Bundle aBundle=new Bundle();
+        aBundle.putString("PREFERENCE_FILE_NAME", getApplication().getPackageName()+".profile");
+        phoneFragment.setArguments(aBundle);
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        mainUI = fragmentManager.findFragmentById(R.id.main_content_fragment);
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.addToBackStack(null);//"MAIN_UI");
+        fragmentTransaction.replace(R.id.container, phoneFragment, "MAIN_UI").commit();
+        mCurrentFragment=phoneFragment;
+        if (getSavedValue(SET_PHONE1).charAt(0)=='-')
+            pageTitle=getResources().getString(R.string.phone_numbers_setting);
+        else
+            pageTitle=getResources().getString(R.string.phone_numbers_change);
+
+        setTitle(pageTitle);
     }
 
+    public void startWarmer(View v)
+    {
+        Toast.makeText(this, "will send start command to server", Toast.LENGTH_LONG).show();
+        ((SetWarmerFragment)mCurrentFragment).backToMain();
+    }
+
+    public void startAirCondition(View v)
+    {
+        ((SetWarmerFragment)mCurrentFragment).backToMain();
+    }
     void selectWarmerCooler()
     {
-        Toast.makeText(this, "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
+        SetWarmerFragment airFragment=new SetWarmerFragment();
+        Bundle aBundle=new Bundle();
+        aBundle.putString("PREFERENCE_FILE_NAME", getApplication().getPackageName()+".profile");
+        airFragment.setArguments(aBundle);
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        mainUI = fragmentManager.findFragmentById(R.id.main_content_fragment);
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.addToBackStack(null);//"MAIN_UI");
+        fragmentTransaction.replace(R.id.container, airFragment, "MAIN_UI").commit();
+        mCurrentFragment=airFragment;
+
+        pageTitle=getResources().getString(R.string.warming_cooling_setting);
+
+
+        setTitle(pageTitle);
     }
 
     void setOneBoot()
@@ -241,36 +314,90 @@ public class MainActivity extends AppCompatActivity
 
     void setMultipleBoot()
     {
-        Toast.makeText(this, "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
+        Intent pIntent=new Intent(this, PickActivity.class);
+        //pIntent.putExtra(CITIZEN_ID, mCitizenId);
+        //pIntent.putExtra(PAGE_TITLE, mPageTitles[5]);
+        //pIntent.putExtra(mFixKey, fixMsg);
+        startActivityForResult(pIntent, PICK_ALL);
+        //Toast.makeText(this, "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
     }
 
+    public void startEngine(View v)
+    {
+        Toast.makeText(this, "will send start command to server", Toast.LENGTH_LONG).show();
+        ((StartEngineFragment)mCurrentFragment).backToMain();
+    }
+
+    public void closeFragment(View v)
+    {
+        mCurrentFragment.backToMain();
+    }
     void startNow()
     {
-        Toast.makeText(this, "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
-    }
+        StartEngineFragment startEngineFragment=new StartEngineFragment();
+        Bundle aBundle=new Bundle();
+        aBundle.putString("PREFERENCE_FILE_NAME", getApplication().getPackageName()+".profile");
+        startEngineFragment.setArguments(aBundle);
 
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        mainUI = fragmentManager.findFragmentById(R.id.main_content_fragment);
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.addToBackStack(null);//"MAIN_UI");
+        fragmentTransaction.replace(R.id.container, startEngineFragment, "MAIN_UI").commit();
+        mCurrentFragment=startEngineFragment;
+
+        pageTitle=getResources().getString(R.string.start_engine);
+        setTitle(pageTitle);
+    }
+    public void stopEngine(View v)
+    {
+        Toast.makeText(this, "will send stop command to server", Toast.LENGTH_LONG).show();
+    }
     void stopNow()
     {
-        Toast.makeText(this, "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
+        StartEngineFragment startEngineFragment=new StartEngineFragment();
+        Bundle aBundle=new Bundle();
+        aBundle.putString("PREFERENCE_FILE_NAME", getApplication().getPackageName()+".profile");
+        startEngineFragment.setArguments(aBundle);
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        mainUI = fragmentManager.findFragmentById(R.id.main_content_fragment);
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.addToBackStack(null);//"MAIN_UI");
+        fragmentTransaction.replace(R.id.container, startEngineFragment, "MAIN_UI").commit();
+        mCurrentFragment=startEngineFragment;
+
+        pageTitle=getResources().getString(R.string.start_engine);
+        setTitle(pageTitle);
     }
     
     public static final String OPEN_LOG="open_log";
     public static final String CLEAN_LOG="clean_logr";
-    public static final String SET_SIMM="set_simm_number";
+    public static final String SET_SIM="set_sim_number";
     public static final String SET_PIN="set_pin_code";
+    public static final String OLD_PIN="old_pin";
     public static final String SET_PHONES="set_phone_numbers";
+    public static final String SET_PHONE1="set_phone_1";
+    public static final String SET_PHONE2="set_phone_2";
+    public static final String GET_PHONE_OLD="get_phone_old";
     public static final String SET_WARMER="select_warmer_cooler";
     public static final String SET_ONE_BOOT="set_one_boot";
     public static final String SET_MULTIPLE_BOOT="set_multiple_boot";
     public static final String CMD_START_NOW="cmd_start_now";
     public static final String CMD_STOP_NOW="set_stop_now";
-    
+    public static final int PICK_DATE=91;
+    public static final int PICK_TIME_START=92;
+    public static final int PICK_TIME_END=93;
+    public static final int PICK_PERIOD=94;
+    public static final int PICK_ALL=99;
+    //public static final int PICK_TIME_END=93;
+
     public void executeCommand(String command)
     {
         mCommand=command;
         switch(command)
         {
-            case SET_SIMM:
+            case SET_SIM:
                 setSimNumber();
                 break;
             case SET_PIN:
@@ -306,11 +433,55 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PICK_ALL)
+        {
+           // String id=data.getStringExtra(CITIZEN_ID);
+            //if (id != null) mCitizenId=id;
+            //if (mCitizenId.indexOf("ZZZ") == 0)
+               // openAgendaPage(null);
+            //else
+            {
+                //openPersonalPage(null);
+            }
+        }
+        else if (requestCode == PICK_DATE)
+        {
+           // openCommitmentPage(null);
+        }
+        else
+        {
+            //openAgendaPage(null);
+        }
+    }
+
     class MyDataBaseJob {
 
     }
 
+    public String getSavedValue(String key) //default is "--"
+    {
+        String fileName=package_name+".profile";//getApplication().getPackageName()+".profile";
+        SharedPreferences mSPF = getSharedPreferences(fileName, Context.MODE_PRIVATE);
+        //SharedPreferences.Editor editor = mSPF.edit();//prefs.edit();
+       // String pwd=MainActivity.SET_PIN;//getResources().getString(R.string.pin_setting);
+        return mSPF.getString(key, "--");
+    }
 
+    public void setPreferenceValue(String key, String value) //default is "--"
+    {
+        String fileName=package_name+".profile";//getApplication().getPackageName()+".profile";
+        SharedPreferences mSPF = getSharedPreferences(fileName, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = mSPF.edit();//prefs.edit();
+        //String pwd=MainActivity.SET_PIN;//getResources().getString(R.string.pin_setting);
+        editor.putString(key, value);
+        editor.commit();
+    }
 
     void nullFunction()
 

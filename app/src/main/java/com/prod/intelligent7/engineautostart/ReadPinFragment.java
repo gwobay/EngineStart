@@ -2,35 +2,33 @@ package com.prod.intelligent7.engineautostart;
 
 
 import android.app.Activity;
-import android.support.v4.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.os.Bundle;
-import android.util.Pair;
-import android.util.TypedValue;
+import android.support.v4.app.Fragment;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class ReadSimFragment extends Fragment {
+public class ReadPinFragment extends MySimpleFragment {
 	public static final String BKP_PASSWORD="BKP_PASSWORD";
-	
-	public ReadSimFragment() {
+
+	public ReadPinFragment() {
 		// TODO Auto-generated constructor stub
 	}
 
@@ -74,10 +72,16 @@ public class ReadSimFragment extends Fragment {
 			mIdDigits[i].invalidate();
 		}
 	}
+	TextView mBlinking;
+	int iBlinking;
+
+	int mTextBackground;
+
 	void showFocusColor(TextView v)
 	{
-		showTheRestNormal();
-		v.setBackgroundColor(0xf500ff00);
+		//showTheRestNormal();
+		//v.setBackgroundColor(0xf500ff00);
+		showBlinking(v);
 		v.invalidate();
 	}
 	void showNormalColor(TextView v)
@@ -100,9 +104,9 @@ public class ReadSimFragment extends Fragment {
 			if (mCurrentText!=null) showNormalColor(mCurrentText);
 			mRow=myRow;
 			mColumn=myColumn;
-			showFocusColor(mIdDigits[mColumn+mRow*mTotalColumn]);
+			//showFocusColor(mIdDigits[mColumn+mRow*mTotalColumn]);
 			mCurrentText=mIdDigits[mColumn+mRow*mTotalColumn];
-			getDigits();
+			readDigitForNewCell();
 		}
 	}
 	
@@ -120,7 +124,7 @@ public class ReadSimFragment extends Fragment {
 			showFocusColor(mPasswords[which]);
 			mCurrentText=mPasswords[which];
 			mColumn=which-1;
-			getDigits();
+			readDigitForNewCell();
 		}
 	}
 	
@@ -213,7 +217,7 @@ public class ReadSimFragment extends Fragment {
 		LinearLayout gID=new LinearLayout(mContext);
 		gID.setLayoutParams(mwParams);
 		gID.setOrientation(LinearLayout.VERTICAL);//0HORIZONTAL, 1Vertical);
-		gID.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.TOP);
+		gID.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.TOP);
 		int txtSize=30;
 		if (isLargeScreen) txtSize=40;
 	 	//TextView idLabel=new TextView(mContext);
@@ -232,17 +236,46 @@ public class ReadSimFragment extends Fragment {
 
 			idRow.setOrientation(LinearLayout.HORIZONTAL);//0HORIZONTAL, 1Vertical);
 			idRow.setGravity(1);
+			TextView whichPwd=new TextView(mContext);
+			whichPwd.setLayoutParams(new LinearLayout.LayoutParams(mDisplayWidth /6, LinearLayout.LayoutParams.WRAP_CONTENT, 0.4f));
+			whichPwd.setGravity(Gravity.TOP|Gravity.LEFT);
+			if (k==0) whichPwd.setText(getResources().getString(R.string.enter_old_pin));
+			else if (k==1) whichPwd.setText(getResources().getString(R.string.enter_new_pin));
+			else if (k==2) whichPwd.setText(getResources().getString(R.string.confirm_new_pin));
+			final int which1=k;
+			whichPwd.setOnClickListener(new LL(k, 0));//
+			/*// setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					mRow=which1;
+					mColumn=0;
+					mCurrentText=mIdDigits[mRow*mTotalColumn];
+				}
+			});*/
+			whichPwd.setTextSize(txtSize* 2/ 3);
+			idRow.addView(whichPwd);
+
 			for (int i = 0; i < mTotalColumn; i++) {
 				int j=i+k*mTotalColumn;
 				mIdDigits[j] = new TextView(mContext);
-				mIdDigits[j].setWidth(txtSize * 12/ 10);
+				mIdDigits[j].setWidth(txtSize * 12 / 10);
 				mIdDigits[j].setTextSize(txtSize);// * 9 / 10);
 				mIdDigits[j].setText("X");
 				mIdDigits[j].setGravity(Gravity.CENTER);
-				if (isLargeScreen) mIdDigits[j].setBackgroundResource(R.drawable.shape_rect_orange_large);
-				else mIdDigits[j].setBackgroundResource(R.drawable.shape_rect_orange_large);
+				int showColor=0;
+				if (isLargeScreen)
+				{
+					mTextBackground=R.drawable.shape_rect_blue_large;
+					showColor=R.drawable.shape_rect_orange_large;
+				}
+				else  {
+					mTextBackground=R.drawable.shape_rect_blue;
+					showColor=R.drawable.shape_rect_orange;
+				}
+				mIdDigits[j].setBackgroundResource(showColor);
 				mIdDigits[j].setClickable(true);
 				mIdDigits[j].setOnClickListener(new LL(k, i));
+				mIdDigits[j].setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT, 0.1f));
 				idRow.addView(mIdDigits[j]);
 			}
 			gID.addView(idRow);
@@ -289,21 +322,24 @@ public class ReadSimFragment extends Fragment {
 	}
 
 
-	void getDigits()
+	void readDigitForNewCell()
 	{
 		int iPos=mColumn + mRow*mTotalColumn;
 		if (iPos<0) {mRow=0; mColumn=0; iPos=0;}
 		if (iPos < mTotalColumn*mTotalRow)
 		{
 			mCurrentText=mIdDigits[iPos];
-			showNormalColor(mCurrentText);
+			//showNormalColor(mCurrentText);
+			showBlinking(mCurrentText);
 		}
 		else
 		{
 			mColumn=mTotalColumn-1;
 			mRow=mTotalRow-1;
-			//mOK.setTextColor(Color.RED);
-			mOK.setBackgroundColor(Color.RED);
+			mOK.setTextColor(Color.RED);
+			//mOK.setBackgroundColor(Color.RED);
+			iBlinking=99;
+			showBlinking(mOK);
 			return;
 		}
 
@@ -346,11 +382,12 @@ public class ReadSimFragment extends Fragment {
 
 					if (mCurrentText != null) {
 						mCurrentText.setText(s);
-						mCurrentText.setBackgroundResource(R.drawable.transition);
-						((TransitionDrawable)mCurrentText.getBackground()).startTransition (300);
+						mCurrentText.setBackgroundResource(mTextBackground);//transition);
+						//((TransitionDrawable)mCurrentText.getBackground()).startTransition (300);
+						stopBlinking(mCurrentText);
 					}
 					mColumn++;
-					getDigits();
+					readDigitForNewCell();
 
 				}
 			});
@@ -390,6 +427,8 @@ public class ReadSimFragment extends Fragment {
 		aBt.getButton().setTextColor(Color.WHITE);
 		aBt.getButton().setOnClickListener(new Button.OnClickListener() {
 			public void onClick(View v) {
+				//if (v.getAnimation()!=null) v.getAnimation().cancel();
+				//mOK.setBackgroundResource(R.drawable.shape_oval_green_large);
 				saveData();
 			}
 		});
@@ -423,20 +462,23 @@ public class ReadSimFragment extends Fragment {
 		aBt=new ButtonInBox(getActivity(),"<-", false);
 
 		aBt.setLayoutParams(okParams);
-		aBt.setGravity(Gravity.CENTER_VERTICAL|Gravity.LEFT);
+		aBt.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
 		aBt.getButton().setTextColor(Color.MAGENTA);
 		aBt.getButton().setOnClickListener(new Button.OnClickListener() {
 			public void onClick(View v) {
+				stopBlinking(mCurrentText);
 				mColumn--;
-				if (mColumn <0)
-				{
-					mColumn=mTotalColumn;
+				if (mColumn < 0) {
+					mColumn = mTotalColumn;
 					mRow--;
-					if (mRow< 0) { mRow=0; mColumn=0;}
+					if (mRow < 0) {
+						mRow = 0;
+						mColumn = 0;
+					}
 				}
-				int myPos=mColumn+mRow*mTotalColumn;
+				int myPos = mColumn + mRow * mTotalColumn;
 				mIdDigits[myPos].setText("_");
-				getDigits();
+				readDigitForNewCell();
 			}
 		});
 		/* if (isLargeScreen)
@@ -481,6 +523,8 @@ public class ReadSimFragment extends Fragment {
 			//setOvalAttr(aBt, "ok", false);
 			aBt.getButton().setOnClickListener(new Button.OnClickListener() {
 				public void onClick(View v) {
+					//if (v.getAnimation()!=null) v.getAnimation().cancel();
+					//mOK.setBackgroundResource(R.drawable.shape_oval_green);
 					saveData();
 				}
 			});
@@ -494,10 +538,12 @@ public class ReadSimFragment extends Fragment {
 			//setOvalAttr(aBt, "0", false);
 			aBt.getButton().setOnClickListener(new Button.OnClickListener() {
 				public void onClick(View v) {
-					if (mCurrentText != null)
+					if (mCurrentText != null) {
 						mCurrentText.setText("0");
+						stopBlinking(mCurrentText);
+					}
 					mColumn++;
-					getDigits();
+					readDigitForNewCell();
 				}
 			});
 			aRow.addView(aBt);
@@ -507,6 +553,7 @@ public class ReadSimFragment extends Fragment {
 		aBt.getButton().setTextColor(Color.MAGENTA);
 		aBt.getButton().setOnClickListener(new Button.OnClickListener() {
 			public void onClick(View v) {
+				stopBlinking(mCurrentText);
 				mColumn--;
 				if (mColumn < 0) {
 					mColumn = mTotalColumn;
@@ -518,7 +565,7 @@ public class ReadSimFragment extends Fragment {
 				}
 				int myPos = mColumn + mRow * mTotalColumn;
 				mIdDigits[myPos].setText("_");
-				getDigits();
+				readDigitForNewCell();
 			}
 		});
 
@@ -556,38 +603,70 @@ public class ReadSimFragment extends Fragment {
 		return devider;
 
 	}
-	void saveData()
+
+	@Override
+	public void saveData()
 	{
-		String simCode="";
-		for (int i=0; i<mIdDigits.length; i++)
-		{
-			String aDigit=mIdDigits[i].getText().toString();
-			if (aDigit=="" || aDigit==" " || aDigit.length() > 1 || aDigit.charAt(0) > '9' || aDigit.charAt(0)<'0' ) {
-				simCode += "X";
-				Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.bad_data_entry), Toast.LENGTH_LONG).show();
-				mColumn=i % mTotalColumn;
-				mRow = i / mTotalColumn;
-				mCurrentText=mIdDigits[i];
-				return;
-			}
-			else
-				simCode += aDigit;
+		String pwd=MainActivity.SET_PIN;//getResources().getString(R.string.pin_setting);
+		String savedPin=((MainActivity)mActivity).getSavedValue(pwd);
+		if (savedPin.charAt(0)=='-') savedPin="0000";
+
+		if (mOK.getAnimation()!=null)
+		mOK.getAnimation().cancel();
+		mOK.setAnimation(null);
+		mOK.setBackgroundColor(Color.GREEN);
+		mOK.invalidate();
+		if (isLandScape)
+			mOK.setBackgroundResource(R.drawable.shape_oval_green_large);
+		else 
+			mOK.setBackgroundResource(R.drawable.shape_oval_green);
+		mOK.invalidate();
+
+		String newPin="";
+		String cmfPin="";
+		String oldPin="";
+		char[] digits=new char[4];
+		for (int i=0; i<4; i++) {
+			String aDigit = mIdDigits[i].getText().toString();
+			//the data is always set
+			digits[i] = aDigit.charAt(0);
+		}
+		oldPin=new String(digits);
+		if (!oldPin.equalsIgnoreCase(savedPin)){
+		Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.wrong_pin), Toast.LENGTH_LONG).show();
+			mColumn=0;
+			mRow = 0;
+			mCurrentText=mIdDigits[0];
+			showBlinking(mCurrentText);
+			return;
+		}
+		for (int i=0; i<4; i++) {
+			String aDigit = mIdDigits[i+4].getText().toString();
+			//the data is always set
+			digits[i] = aDigit.charAt(0);
+		}
+		newPin=new String(digits);
+		for (int i=0; i<4; i++) {
+			String aDigit = mIdDigits[i+8].getText().toString();
+			//the data is always set
+			digits[i] = aDigit.charAt(0);
+		}
+		cmfPin=new String(digits);
+		if (!cmfPin.equalsIgnoreCase(newPin)) {
+			Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.pin_not_consistent), Toast.LENGTH_LONG).show();
+			mColumn = 0;
+			mRow = 1;
+			mCurrentText = mIdDigits[4];
+			showBlinking(mCurrentText);
+			return;
 		}
 
-
-    	String key=MainActivity.SET_SIM;//getResources().getString(R.string.old_pin);
-		((MainActivity)mActivity).setPreferenceValue(key, simCode);
+		String old1=MainActivity.OLD_PIN;//getResources().getString(R.string.old_pin);
+		((MainActivity)mActivity).setPreferenceValue(pwd, newPin);
+		((MainActivity)mActivity).setPreferenceValue(old1, oldPin);
 
         backToMain();
 	}
-
-    void backToMain()
-    {
-        ((MainActivity)getActivity()).setDefaultTitle();
-        getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
-        getActivity().getSupportFragmentManager().popBackStackImmediate();
-
-    }
 
 	 @Override
 	    public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -595,7 +674,12 @@ public class ReadSimFragment extends Fragment {
 	 {
 		 mActivity=getActivity();
 		 mContext=mActivity;//.getApplicationContext();
+		 mBlinking=null;
+		 iBlinking=-1;
 		 getMyScreenSize();
+		 //if (isLandScape){
+			 mTotalColumn=4; mTotalRow=3;
+		 //}
 		 ScrollView sv=new ScrollView(mContext);
 		 sv.setFillViewport(true);
 		 LinearLayout myUI=new LinearLayout(mContext);
@@ -623,13 +707,13 @@ public class ReadSimFragment extends Fragment {
 		 		newUser=true;
 		 	}
 		*/
-		 /*
-		 	id.addView(passwdLabel());
+		 
+		 	//myUI.addView(passwdLabel());
 
-		 	id.addView(passwordLine());
-		 	*/
+		 	//myUI.addView(passwordLine());
+		 	
 		// myUI.addView(idLabel());
-		 myUI.addView(idLine());
+		myUI.addView(idLine());
 		 TextView line = new TextView(getActivity());
 		 line.setBackgroundResource(android.R.color.holo_red_dark);
 		 line.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 2));
@@ -693,6 +777,9 @@ public class ReadSimFragment extends Fragment {
 		 mColumn=0;
 		 mRow=0;
 		 mCurrentText=mIdDigits[0];
+		 iBlinking=0;
+		 showBlinking(mCurrentText);
+
 		// return myUI;
 		 	sv.addView(myUI);
 		 /*
@@ -708,9 +795,11 @@ public class ReadSimFragment extends Fragment {
 	        return sv;
 	 }
 
-	int szKeySize;
 	int mTotalRow;
 	int mTotalColumn;
+
+	/*
+	int szKeySize;
 	boolean isLargeScreen;
 	boolean isLandScape;
 	private int mDisplayWidth;
@@ -719,53 +808,6 @@ public class ReadSimFragment extends Fragment {
 	LinearLayout.LayoutParams keyPadParams;
 
 	private int mLogBarHeight;
-	void getMyScreenSize() //if land scape use 10-10 layout, otherwise use 4-4-4-4-4 layout
-	{
-		//Display display = getWindowManager().getDefaultDisplay();
-		WindowManager wm = (WindowManager) getActivity().getSystemService(Context.WINDOW_SERVICE);
-		Display display = wm.getDefaultDisplay();
-		Point size = new Point();
-		display.getSize(size);
-		isLargeScreen=false;
-		int iMaxSize=size.x;
-		mDisplayWidth = size.x;
-		mDisplayHeight = size.y;
-		if (size.y > iMaxSize )iMaxSize=size.y;
-		if (size.y > 850) isLargeScreen=true;
-		keyPadWidth=mDisplayWidth/2;
-		keyPadParams=new LinearLayout.LayoutParams(keyPadWidth, mDisplayHeight/4, 0.5f);
-		if (mDisplayWidth>mDisplayHeight)
-		{
-			isLandScape=true;
-			szKeySize=mDisplayHeight/10;
-			mTotalColumn=10; mTotalRow=2;
-		}
-		else
-		{
-			isLandScape=false;
-			szKeySize=mDisplayHeight/15;
-			mTotalColumn=4; mTotalRow=5;
-		}
-		//If you're not in an Activity you can get the default Display via WINDOW_SERVICE:
-		/*
-		TypedValue tv = new TypedValue();
-		int mActionBarHeight=0;
-		if (getActivity().getTheme().resolveAttribute(
-				android.R.attr.actionBarSize, tv, true)) {
-			mActionBarHeight = TypedValue.complexToDimensionPixelSize(
-					tv.data, getActivity().getResources().getDisplayMetrics());
-		}
-		mDisplayHeight -= mActionBarHeight ;
-		mLogBarHeight = mActionBarHeight*2/3;
-		if (mLogBarHeight < 10) mLogBarHeight=10;
-		mLogBarHeight=0; //now use menu item
-		mDisplayHeight -= mLogBarHeight;
-		int nC=2, nR=4; //# of col. row
-		if (isLandScape) {nC=4; nR=2;}
-		mDisplayHeight -= (8*nR);
-		mDisplayWidth -= 4*nC;
-		//control_height=mDisplayHeight/nR;
-		//control_width=mDisplayWidth/nC;
-		*/
-	}
+	*/
+
 }

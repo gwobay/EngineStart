@@ -105,15 +105,23 @@ public class MainActivityFragment extends Fragment {
     Button buildSIMButton()
     {
       Button retB=new Button(getActivity());
-        constructButton(retB, getResources().getString(R.string.sim_setting));
-        retB.setOnClickListener(new ButtonClickListener(SET_SIMM));
+        String savedSim=((MainActivity)myActivity).getSavedValue(MainActivity.SET_SIM);
+        if (savedSim.charAt(0)=='-')
+            constructButton(retB, getResources().getString(R.string.sim_setting));
+        else
+            constructButton(retB, getResources().getString(R.string.sim_change));
+        retB.setOnClickListener(new ButtonClickListener(SET_SIM));
         return retB;
     }
 
     Button buildPINButton()
     {
         Button retB=new Button(getActivity());
-        constructButton(retB, getResources().getString(R.string.pin_setting));
+        String savedPin=((MainActivity)myActivity).getSavedValue(MainActivity.SET_PIN);
+        if (savedPin.charAt(0)=='-')
+            constructButton(retB, getResources().getString(R.string.pin_setting));
+        else
+            constructButton(retB, getResources().getString(R.string.pin_change));
         retB.setOnClickListener(new ButtonClickListener(SET_PIN));
         return retB;
     }
@@ -121,17 +129,25 @@ public class MainActivityFragment extends Fragment {
     Button buildPhonesButton()
     {
         Button retB=new Button(getActivity());
-        constructButton(retB,getResources().getString(R.string.phone_numbers_setting) );
+        String savedPin=((MainActivity)myActivity).getSavedValue(MainActivity.SET_PHONE1);
+        if (savedPin.charAt(0)=='-')
+            constructButton(retB,getResources().getString(R.string.phone_numbers_setting) );
+        else
+            constructButton(retB, getResources().getString(R.string.phone_numbers_change));
         retB.setOnClickListener(new ButtonClickListener(SET_PHONES));
         return retB;
     }
     Button buildWarmerCoolerButton()
     {
         Button retB=new Button(getActivity());
-        constructButton(retB,getResources().getString(R.string.warming_cooling_setting) );
+
+            constructButton(retB,getResources().getString(R.string.warming_cooling_setting) );
+
+
         retB.setOnClickListener(new ButtonClickListener(SET_WARMER));
         return retB;
     }
+
     Button buildDailyOneStartButton()
     {
         Button retB=new Button(getActivity());
@@ -139,6 +155,7 @@ public class MainActivityFragment extends Fragment {
         retB.setOnClickListener(new ButtonClickListener(SET_ONE_BOOT));
         return retB;
     }
+
     Button buildDailyMultipleButton()
     {
         Button retB=new Button(getActivity());
@@ -260,6 +277,7 @@ public class MainActivityFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         getMyScreenSize();
+        myActivity=(MainActivity)getActivity();
        // ScrollView sv=new ScrollView(getActivity());
         LinearLayout retV=new LinearLayout(getActivity());
         retV.setOrientation(LinearLayout.VERTICAL);//0HORIZONTAL, 1Vertical);
@@ -275,7 +293,7 @@ public class MainActivityFragment extends Fragment {
     String mCommand;
     public static final String OPEN_LOG="open_log";
     public static final String CLEAN_LOG="clean_logr";
-    public static final String SET_SIMM="set_simm_number";
+    public static final String SET_SIM="set_sim_number";
     public static final String SET_PIN="set_pin_code";
     public static final String SET_PHONES="set_phone_numbers";
     public static final String SET_WARMER="select_warmer_cooler";

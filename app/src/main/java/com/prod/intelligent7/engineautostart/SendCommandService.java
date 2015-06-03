@@ -62,29 +62,29 @@ public class SendCommandService extends IntentService {
             if (ACTION_REGISTRATION.equals(action)) {
                 final String param1 = intent.getStringExtra(EXTRA_COMMAND);
                 final String param2 = intent.getStringExtra(EXTRA_PARAMETERS);
-                handleActionFoo(param1, param2);
+                handleRegistration(param1, param2);
             } else if (ACTION_DO_IT.equals(action)) {
                 final String param1 = intent.getStringExtra(EXTRA_COMMAND);
                 final String param2 = intent.getStringExtra(EXTRA_PARAMETERS);
-                handleActionBaz(param1, param2);
+                handleSendCommand(param1, param2);
             }
         }
     }
 
     /**
-     * Handle action Foo in the provided background thread with the provided
+     * Handle action registration in the provided background thread with the provided
      * parameters.
      */
-    private void handleActionFoo(String param1, String param2) {
+    private void handleRegistration(String param1, String param2) {
         // TODO: Handle action Foo
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
     /**
-     * Handle action Baz in the provided background thread with the provided
+     * Handle action send command in the provided background thread with the provided
      * parameters.
      */
-    private void handleActionBaz(String param1, String param2) {
+    private void handleSendCommand(String param1, String param2) {
         // TODO: Handle action Baz
         throw new UnsupportedOperationException("Not yet implemented");
     }

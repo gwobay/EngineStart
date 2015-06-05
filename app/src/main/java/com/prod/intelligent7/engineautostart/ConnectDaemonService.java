@@ -16,8 +16,10 @@
 
 package com.prod.intelligent7.engineautostart;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.locks.ReentrantLock;
 
 //import com.google.android.gms.gcm.GoogleCloudMessaging;
@@ -25,6 +27,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -33,6 +36,7 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.SystemClock;
 import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
@@ -48,29 +52,30 @@ import android.view.WindowManager;
  * service is finished, it calls {@code completeWakefulIntent()} to release the
  * wake lock.
  */
-public class EASIntentService extends IntentService {
+public class ConnectDaemonService extends Service {
     //public static final int NOTIFICATION_ID = 1;
     public static int NOTIFICATION_ID;
-    
+    public static final String DAEMON_COMMAND="COMMAND";
     public static final ReentrantLock fileLock=new ReentrantLock(); 
     public static Ringtone noise=null;
     private NotificationManager mNotificationManager;
     NotificationCompat.Builder builder;
 
-    public EASIntentService() {
-        super("EASIntentService");
+    public ConnectDaemonService() {
+        super();
     }
     public static final String TAG = "EAS JOB";
 
-    @Override
-    protected void onHandleIntent(Intent intent) {
-        Bundle extras = intent.getExtras();
+    //@Override
+   // protected void onHandleIntent(Intent intent) {
+        //onBind(intent);
+        //Bundle extras = intent.getExtras();
         //GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
         // The getMessageType() intent parameter must be the intent you received
         // in your BroadcastReceiver.
-        String messageType = null;//gcm.getMessageType(intent);
+        //String messageType = null;//gcm.getMessageType(intent);
 
-        if (!extras.isEmpty()) {  // has effect of unparcelling Bundle
+        //if (!extras.isEmpty()) {  // has effect of unparcelling Bundle
             /*
              * Filter messages based on message type. Since it is likely that GCM will be
              * extended in the future with new message types, just ignore any message types you're
@@ -95,11 +100,70 @@ public class EASIntentService extends IntentService {
                 // Post notification of received message.
 
             } */
-            sendNotification("Received: " + extras.toString());
-            Log.i(TAG, "Received: " + extras.toString());
-        }
+           // sendNotification("Received: " + extras.toString());
+           // Log.i(TAG, "Received: " + extras.toString());
+        //}
         // Release the wake lock provided by the WakefulBroadcastReceiver.
-        EASBroadcastReceiver.completeWakefulIntent(intent);
+        //EASBroadcastReceiver.completeWakefulIntent(intent);
+   // }
+
+    static TcpConnectDaemon mDaemon=null;
+    ArrayBlockingQueue<String> outBoundMailBox;
+    @Override
+    public void onCreate() {
+        if (mDaemon==null ||
+                !mDaemon.isAlive())
+        startDaemon();
+    }
+
+    void startDaemon()
+    {
+        String mHost=getSharedPreferences(MainActivity.package_name+".profile", MODE_PRIVATE).getString("SERVER_IP", "200.133.173.175");
+        //start a thread to talk to server every minute
+        String mPort=getSharedPreferences(MainActivity.package_name+".profile", MODE_PRIVATE).getString("SERVER_PORT", "8686");
+        //start a thread to talk to server every minute
+        mDaemon=new TcpConnectDaemon(mHost, Integer.parseInt(mPort));
+        outBoundMailBox=mDaemon.getOutDataQ();
+        mDaemon.attachToService(this);
+        mDaemon.start();
+
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        // The service is starting, due to a call to startService()
+        if (intent!=null)
+            onBind(intent);
+        return START_STICKY;//mStartMode;
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        // A client is binding to the service with bindService()
+        String command=intent.getExtras().getString(DAEMON_COMMAND);
+        if (command != null)
+        {
+            if (outBoundMailBox==null) startDaemon();
+            if (mDaemon!=null && mDaemon.isAlive())
+                mDaemon.putOutBoundMsg(command);
+        }
+
+        return null;//mBinder;
+    }
+    @Override
+    public boolean onUnbind(Intent intent) {
+        // All clients have unbound with unbindService()
+
+        return false;//mAllowRebind;
+    }
+    @Override
+    public void onRebind(Intent intent) {
+        // A client is binding to the service with bindService(),
+        // after onUnbind() has already been called
+    }
+    @Override
+    public void onDestroy() {
+        // The service is no longer used and is being destroyed
     }
 
     int saveData(String tblName, String fixLine)
@@ -120,6 +184,7 @@ public class EASIntentService extends IntentService {
     	}
     	return iPending;
     }
+
     void makeNoise()
     {
     	boolean toRing=false;
@@ -155,55 +220,97 @@ public class EASIntentService extends IntentService {
         }   else noise=null;           
     }
     // Put the message into a notification and post it.
-    // This is just one simple example of what you might choose to do with
-    // a GCM message.
+
+    private static HashMap<String, String> mcuDictionary;
+    static public HashMap<String, String> getMcuCodeDictionary(){
+
+        if (mcuDictionary==null) buildCodeDictionary();
+        return mcuDictionary;
+    }
+
+    public static String getChinese(String code){
+        String retS="";
+        if (mcuDictionary==null) buildCodeDictionary();
+        return retS+mcuDictionary.get(code);
+    }
+    private static void buildCodeDictionary() {
+        mcuDictionary=new HashMap<String, String>();
+        mcuDictionary.put("M1-00","冷气启动");
+        mcuDictionary.put("M1-01","暖气启动");
+        mcuDictionary.put("M2","车载机密码更换");
+        mcuDictionary.put("M3","手机號码设定");
+        mcuDictionary.put("M4-00","立即关闭引擎");
+        mcuDictionary.put("M4-01","立即关闭冷气");
+        mcuDictionary.put("M5","立即启动");
+        mcuDictionary.put("M5","立即启动");
+
+        mcuDictionary.put("S110", "暖气设定成功");
+
+        mcuDictionary.put("S111", "暖气设定失败");
+
+        mcuDictionary.put("S100", "冷氣設定成功");
+
+        mcuDictionary.put("S101", "冷氣設定失敗");
+
+        mcuDictionary.put("S200", "车载机密码设定成功");
+
+        mcuDictionary.put("S201", "车载机密码设定失败");
+
+        mcuDictionary.put("S300", "手机号码设定成功");
+
+        mcuDictionary.put("S301", "手机号码设定失败");
+
+        mcuDictionary.put("S400", "引擎已关闭");
+
+        mcuDictionary.put("S401", "引擎由车主启动,不能关闭");
+
+        mcuDictionary.put("S410", "冷氣已關閉");
+
+        mcuDictionary.put("S411", "冷氣關閉失敗");
+
+        mcuDictionary.put("S500", "引擎已启动");
+
+        mcuDictionary.put("S501", "引擎启动失败");
+
+        mcuDictionary.put("S502", "引擎启动成功");
+
+        mcuDictionary.put("S503", "偷车");
+
+        mcuDictionary.put("S504", "暖车失败");
+
+        mcuDictionary.put("S505", "暖车完毕");
+
+        mcuDictionary.put("S999", "手机号码未授权");
+    }
+
+
     //static //String header=MainActivity.getFileHeader();
     
-    private void sendNotification(String msg) {
+    public void sendNotification(String msg) {
         mNotificationManager = (NotificationManager)
                 this.getSystemService(Context.NOTIFICATION_SERVICE);
 
         makeNoise();
         String msgShow=msg;
-        int i0=msg.indexOf("170=");
-        String extraString=null;
-        if (i0 > 0)
-        {
-        	extraString=msg.substring(i0);
-        	msgShow="";
-        	int i9=0;
-        	while (i9< msg.length() && msgShow.length() < 20)
-        	{
-        		i0=msg.indexOf("=", i0);
-        		if (i0 < 0) break;
-        		i9=msg.indexOf("|", ++i0);
-        		if (i9<0) i9=msg.length();
-        		msgShow += msg.substring(i0, i9);
-        		msgShow += ",";
-        	}
-        }
+        //msg :   msg in SXX@time<sender> format
+        //SXX need translation from code to simplified chinese
+
+        int i0=msg.indexOf("@");
+        int idx=msg.indexOf("<");
+        if (i0>0) msgShow=msg.substring(0, i0);
+        else if (idx>0) msgShow=msg.substring(0, idx);
+        String chinese=getChinese(msgShow);
+
         Intent jobIntent=null;//=new Intent(this, MainActivity.class);
 
         jobIntent=new Intent(this, MainActivity.class);//main will invoke other activities
         String tblName="";
         int iPending=1;
         
-        if (extraString != null)
-        {
-        	int ix0=extraString.indexOf("170=");
-        	int ix9=extraString.indexOf("|", ix0+4);
-        	
-        	tblName=extraString.substring(ix0+4, ix9);
-        	if (tblName.equalsIgnoreCase("agenda"))
-        	{
-        		iPending=saveData(tblName, extraString);
-        		//jobIntent=new Intent(this, AgendaActivity.class);//MainActivity.class);
-        	}
-        	/*else if (tblName.equalsIgnoreCase("chatroom"))
-        		jobIntent=new Intent(this, ChatRoomActivity.class);*/
-            String fixKey="TEST";//getResources().getString(R.string.fix_line_key);
-        	jobIntent.putExtra(fixKey, "EAS>>"+extraString);
-        }
+
+
+        jobIntent.putExtra("MCU_RESP", "EAS>>"+chinese);
+
         
         String header="EAS";//getResources().getString(R.string.candidate_name);
         String MSGs="EAS";//getResources().getString(R.string.msg_for_you);
@@ -216,14 +323,14 @@ public class EASIntentService extends IntentService {
         //.setSmallIcon(R.drawable.save_icon)//kp37)//ic_stat_gcm)
         .setContentTitle(header+"("+iPending+")")
         .setStyle(new NotificationCompat.BigTextStyle().bigText(msgShow))
-        .setContentText(tblName+" "+iPending+MSGs)
+        .setContentText(chinese)
         .setLights(0xFF0000, 2000, 5000)
         .setAutoCancel(true);
 
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, jobIntent, Intent.FLAG_ACTIVITY_NEW_TASK);//PendingIntent.FLAG_ONE_SHOT); //the intent to open when clicked
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, jobIntent, PendingIntent.FLAG_UPDATE_CURRENT); //the intent to open when clicked
         
         mBuilder.setContentIntent(contentIntent); //so MainActivity will be opened when notification is clicked
-        mNotificationManager.notify(tblName.hashCode(), mBuilder.build());
+        mNotificationManager.notify(getPackageName().hashCode(), mBuilder.build());
         
         if (noise != null)
         {

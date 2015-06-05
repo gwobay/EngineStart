@@ -122,7 +122,10 @@ public class MainActivityFragment extends Fragment {
             constructButton(retB, getResources().getString(R.string.pin_setting));
         else
             constructButton(retB, getResources().getString(R.string.pin_change));
-        retB.setOnClickListener(new ButtonClickListener(SET_PIN));
+        if (imNewUser) retB.setAlpha(0.2f);
+        else
+            retB.setOnClickListener(new ButtonClickListener(SET_PIN));
+
         return retB;
     }
 
@@ -141,9 +144,10 @@ public class MainActivityFragment extends Fragment {
     {
         Button retB=new Button(getActivity());
 
-            constructButton(retB,getResources().getString(R.string.warming_cooling_setting) );
+            constructButton(retB, getResources().getString(R.string.warming_cooling_setting));
 
-
+        if (imNewUser) retB.setAlpha(0.2f);
+        else
         retB.setOnClickListener(new ButtonClickListener(SET_WARMER));
         return retB;
     }
@@ -151,30 +155,42 @@ public class MainActivityFragment extends Fragment {
     Button buildDailyOneStartButton()
     {
         Button retB=new Button(getActivity());
-        constructButton(retB,getResources().getString(R.string.daily_auto_start_setting) );
-        retB.setOnClickListener(new ButtonClickListener(SET_ONE_BOOT));
+        constructButton(retB, getResources().getString(R.string.daily_auto_start_setting));
+        if (imNewUser) retB.setAlpha(0.2f);
+        else
+            retB.setOnClickListener(new ButtonClickListener(SET_ONE_BOOT));
+
         return retB;
     }
 
     Button buildDailyMultipleButton()
     {
         Button retB=new Button(getActivity());
-        constructButton(retB,getResources().getString(R.string.daily_multiple_start_setting) );
-        retB.setOnClickListener(new ButtonClickListener(SET_MULTIPLE_BOOT));
+        constructButton(retB, getResources().getString(R.string.daily_multiple_start_setting));
+       if (imNewUser) retB.setAlpha(0.2f);
+        else
+           retB.setOnClickListener(new ButtonClickListener(SET_MULTIPLE_BOOT));
+
         return retB;
     }
     Button buildStartNowButton()
     {
         Button retB=new Button(getActivity());
-        constructButton(retB,getResources().getString(R.string.start_engine) );
-        retB.setOnClickListener(new ButtonClickListener(CMD_START_NOW));
+        constructButton(retB, getResources().getString(R.string.start_engine));
+        if (imNewUser) retB.setAlpha(0.2f);
+        else
+            retB.setOnClickListener(new ButtonClickListener(CMD_START_NOW));
+
         return retB;
     }
     Button buildStopNowButton()
     {
         Button retB=new Button(getActivity());
-        constructButton(retB,getResources().getString(R.string.shut_down_engine) );
-        retB.setOnClickListener(new ButtonClickListener(CMD_STOP_NOW));
+        constructButton(retB, getResources().getString(R.string.shut_down_engine));
+       if (imNewUser) retB.setAlpha(0.2f);
+        else
+           retB.setOnClickListener(new ButtonClickListener(CMD_STOP_NOW));
+
         return retB;
     }
 
@@ -232,6 +248,7 @@ public class MainActivityFragment extends Fragment {
         for (int i=0; i<4; i++)
             onePair.addView(buildControlButtons1Pair(i, !vertically));
 
+        onePair.setTag("BUTTONS");
         return onePair;
 
     }
@@ -271,14 +288,21 @@ public class MainActivityFragment extends Fragment {
         control_width=mDisplayWidth/nC;
     }
 
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-
+    public LinearLayout repaintButtons()
+    {
         getMyScreenSize();
         myActivity=(MainActivity)getActivity();
-       // ScrollView sv=new ScrollView(getActivity());
+        imNewUser=(myActivity.getSavedValue(MainActivity.SET_PHONE1).charAt(0)=='-' ||
+                myActivity.getSavedValue(MainActivity.SET_SIM).charAt(0)=='-'  );
+        return buildControlButtons();
+    }
+
+    public View paintView(){
+        getMyScreenSize();
+        myActivity=(MainActivity)getActivity();
+        imNewUser=(myActivity.getSavedValue(MainActivity.SET_PHONE1).charAt(0)=='-' ||
+                myActivity.getSavedValue(MainActivity.SET_SIM).charAt(0)=='-'  );
+        // ScrollView sv=new ScrollView(getActivity());
         LinearLayout retV=new LinearLayout(getActivity());
         retV.setOrientation(LinearLayout.VERTICAL);//0HORIZONTAL, 1Vertical);
         //id.setGravity(1);//center_horizontal
@@ -286,7 +310,14 @@ public class MainActivityFragment extends Fragment {
         //retV.addView(buildLogBar()); //now in menu item
         retV.addView(buildControlButtons());
 
-         return retV;
+        return retV;
+    }
+boolean imNewUser;
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+
+        return paintView();
        // return inflater.inflate(R.layout.fragment_main, container, false);
     }
 

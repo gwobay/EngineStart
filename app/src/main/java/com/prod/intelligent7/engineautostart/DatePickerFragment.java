@@ -67,7 +67,11 @@ public class DatePickerFragment extends DialogFragment
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 							 Bundle savedInstanceState) {
-		View retV = inflater.inflate(R.layout.layout_pick_date, container, false);
+		View retV=null;
+		if (PickActivity.n_boot)
+		retV = inflater.inflate(R.layout.layout_n_boots, container, false);
+		else
+		retV = inflater.inflate(R.layout.layout_1_boot, container, false);
 		return retV;
 	}
 }

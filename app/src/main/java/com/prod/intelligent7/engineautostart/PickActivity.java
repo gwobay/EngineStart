@@ -14,6 +14,8 @@ import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -21,18 +23,29 @@ import android.widget.TimePicker;
 public class PickActivity extends FragmentActivity
 				implements TimePickerDialog.OnTimeSetListener 
 {
-	static final String PROFILE_TAG="PROFILE_TAG";
+
+
 	//static ProfilePage mFragment=null;
-	static String mCitizenId=null;
-	static boolean firstTime=true;
+
+	static boolean n_boot=true;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_picker);//activity_login);
+		Intent intent = getIntent();
+		String fixLine=null;
 
-	    //getActionBar().setHomeButtonEnabled(false);
-		// Set up the login form.
+		if (intent == null || // no extra back from map
+					!intent.hasExtra(MainActivity.PICK4WHAT)) done();
+		fixLine=intent.getExtras().getString(MainActivity.PICK4WHAT);
+		if (fixLine.equalsIgnoreCase(MainActivity.N_BOOT_PARAMS)) {
+			setContentView(R.layout.activity_pick_n);
+			n_boot = true;
+		}
+		else {
+			setContentView(R.layout.activity_pick_1);
+			n_boot=false;
+		}
 	}
 	static Menu mActionMenu=null;
 
@@ -121,6 +134,57 @@ public class PickActivity extends FragmentActivity
 		pFrg.pickDate(dateView, this);
 	}
 
+
+	public void saveNBootData(View v)
+	{
+		View rootV=v.getRootView();
+		TimePicker pStart=(TimePicker)rootV.findViewById(R.id.n_boot_time_start);
+		int iHr=pStart.getCurrentHour();
+		int iMin=pStart.getCurrentMinute();
+		String nBootParam=""+iHr+":"+iMin+"-";
+		EditText activeP=(EditText)rootV.findViewById(R.id.active_period);
+		if (activeP!= null) nBootParam += activeP.getText().toString()+"-";
+		EditText idleP=(EditText)rootV.findViewById(R.id.idle_period);
+		if (idleP!= null) nBootParam += idleP.getText().toString();
+		pStart=(TimePicker)rootV.findViewById(R.id.n_boot_time_end);
+		int eHr=pStart.getCurrentHour();
+		int eMin=pStart.getCurrentMinute();
+		if (eHr < iHr) eHr += 12;
+		int last4=(eHr-iHr)*60+(eMin-iMin);
+		nBootParam += ("-"+last4);
+
+		String fileName=MainActivity.package_name+".profile";
+		SharedPreferences mem = getSharedPreferences(fileName, Context.MODE_PRIVATE);
+		SharedPreferences.Editor adder=mem.edit();
+		adder.putString(MainActivity.N_BOOT_PARAMS, nBootParam);
+		done();
+	}
+
+	public void save1BootData(View v)
+	{
+		View rootV=v.getRootView();
+		DatePicker pStartD=(DatePicker)rootV.findViewById(R.id.one_boot_date);
+		int iYY=pStartD.getYear();
+		int iMM=pStartD.getMonth();
+		int iDD=pStartD.getDayOfMonth();
+		TimePicker pStart=(TimePicker)rootV.findViewById(R.id.one_boot_time);
+		int iHH=pStart.getCurrentHour();
+		int iM60=pStart.getCurrentMinute();
+		String bootParam=""+iYY+"/"+iMM+"/"+iDD+":"+iHH+":"+iM60+"-";
+		EditText activeP=(EditText)rootV.findViewById(R.id.last4);
+		if (activeP!= null) bootParam += activeP.getText().toString();
+
+		String fileName=MainActivity.package_name+".profile";
+		SharedPreferences mem = getSharedPreferences(fileName, Context.MODE_PRIVATE);
+		SharedPreferences.Editor adder=mem.edit();
+		adder.putString(MainActivity.ONE_BOOT_PARAMS, bootParam);
+		done();
+	}
+
+	public void doneActivity(View v)
+	{
+		done();
+	}
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) 
 	{			
@@ -161,7 +225,7 @@ public class PickActivity extends FragmentActivity
     public void done()
     {
     	//Intent it=new Intent();
-    	this.setResult(MainActivity.PICK_DATE);
+    	this.setResult(n_boot?MainActivity.PICK_N:MainActivity.PICK_ONE);
     	finish();
     }
 }

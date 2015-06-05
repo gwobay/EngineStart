@@ -129,7 +129,7 @@
             android:capitalize="words"
             android:clickable="true"
             android:textSize="30dp"
-            android:onClick="closePhoneFragment"
+            android:onClick="closeFragment"
             android:padding="5dp" />
 
     </LinearLayout>

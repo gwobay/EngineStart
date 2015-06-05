@@ -583,9 +583,16 @@ public class ReadSimFragment extends Fragment {
 
     void backToMain()
     {
-        ((MainActivity)getActivity()).setDefaultTitle();
-        getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
-        getActivity().getSupportFragmentManager().popBackStackImmediate();
+		MainActivity mAc=(MainActivity)getActivity();
+		mAc.setDefaultTitle();
+		mAc.getSupportFragmentManager().beginTransaction().remove(this).commit();
+        //getActivity().getSupportFragmentManager().popBackStackImmediate();
+		if (mAc.mainUI!=null){
+			LinearLayout aL= (LinearLayout)mAc.mainUI.getView();
+			aL.removeAllViews();
+			LinearLayout newV=((MainActivityFragment)mAc.mainUI).repaintButtons();
+			aL.addView(newV);
+		}
 
     }
 

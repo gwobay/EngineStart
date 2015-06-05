@@ -665,6 +665,8 @@ public class ReadPinFragment extends MySimpleFragment {
 		((MainActivity)mActivity).setPreferenceValue(pwd, newPin);
 		((MainActivity)mActivity).setPreferenceValue(old1, oldPin);
 
+		((MainActivity)mActivity).updatePinCommand();
+
         backToMain();
 	}
 

@@ -9,6 +9,8 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -84,9 +86,25 @@ public class MySimpleFragment extends Fragment {
     }
     public void backToMain()
     {
-        ((MainActivity)getActivity()).setDefaultTitle();
-        getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
-        getActivity().getSupportFragmentManager().popBackStackImmediate();
+        MainActivity mAc=(MainActivity)getActivity();
+        //mAc.setDefaultTitle();
+        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+
+        fragmentManager.beginTransaction().remove(this).commit();
+        //fragmentManager.popBackStackImmediate();
+        //mainUI = fragmentManager.findFragmentById(R.id.main_content_fragment);
+
+        //Fragment aFg=fragmentManager.findFragmentById(R.id.main_content_fragment);//R.id.container);
+
+        //mAc.setContentView(null);
+        //mAc.setContentView(R.layout.activity_main);
+        if (mAc.mainUI!=null){
+            LinearLayout aL= (LinearLayout)mAc.mainUI.getView();
+            aL.removeAllViews();
+            LinearLayout newV=((MainActivityFragment)mAc.mainUI).repaintButtons();
+            aL.addView(newV);
+        }
+
     }
 
     protected int szKeySize;

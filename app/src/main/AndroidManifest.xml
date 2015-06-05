@@ -3,6 +3,7 @@
     package="com.prod.intelligent7.engineautostart" >
 
     <!--  uses-permission android:name="android.permission.VIBRATE" />   -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.INTERNET" />
@@ -46,9 +47,17 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
         </activity>
-
+        <receiver
+            android:name=".StartServiceAtBoot"
+            android:enabled="true"
+            android:exported="false"
+            android:label="StartServiceAtBoot" >
+            <intent-filter>
+                <action android:name="android.intent.action._BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
         <service
-            android:name=".SendCommandService"
+            android:name=".ConnectDaemonService"
             android:exported="false" >
         </service>
     </application>

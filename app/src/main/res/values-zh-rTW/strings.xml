@@ -84,12 +84,26 @@
     <string name="start_air_condition">启动冷气</string>
     <string name="press_start_air_condition">按下此启动冷气</string>
     <string name="unavailable">(无法使用)</string>
+    <!-- end warmer / cooler aircondition/-->
+    <!-- engine / boot 1 or N/-->
     <string name="return_home">转回主屏幕</string>
+
+    <string name="n_boot_start_time">选择多次启动开始时刻</string>
+    <string name="n_boot_active_period">输入每次启动持续时程</string>
+    <string name="n_boot_idle_period">输入每次中断休息间距</string>
+    <string name="n_boot_end_time">选择多次启动终止时刻</string>
+
+    <string name="one_boot_start_date">选择一次启动开始日期</string>
+    <string name="one_boot_start_time">选择一次启动开始时刻</string>
+    <string name="one_boot_active_period">输入启动持续时程</string>
+
+    <string name="minute">分钟</string>
+    <!-- dictionary 雕刻发性重复时间中断距离 雕刻发性重复时间 时间路程打断 每次 分钟//-->
     <string name="press_start_engine">按下此启动引擎</string>
 
     <string name="press_stop_engine">按下此停止引擎</string>
 
-    <!-- end warmer / cooler aircondition/-->
+    <!-- end engine / boot 1 or N              /-->
 
     <string name="abc_action_bar_home_description">转到主屏幕</string>
     <string name="abc_action_bar_home_description_format">%1$s：%2$s</string>

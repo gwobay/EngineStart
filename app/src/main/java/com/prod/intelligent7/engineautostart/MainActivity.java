@@ -30,10 +30,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
+import java.text.DecimalFormat;
 import java.util.Date;
 
 
@@ -43,11 +45,21 @@ public class MainActivity extends AppCompatActivity
 
     static String application_name="MainActivity";
     static String package_name="com.prod.intelligent7.engineautostart";
+    private  static final String FIRST_TIME_USER="first_time";
+    static final String DAEMON="DAEMON";
+    static boolean imNewUser=false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        application_name=getResources().getString(R.string.app_name_en);
         setContentView(R.layout.activity_main);
+        application_name=getResources().getString(R.string.app_name_en);
+        if (getSavedValue(SET_SIM).charAt(0)=='-') {
+            imNewUser = true;
+            setPreferenceValue(SET_PIN, "0000");
+        }
+        else
+            imNewUser=false;
+
     }
 
     static String pageTitle=null;
@@ -215,7 +227,7 @@ public class MainActivity extends AppCompatActivity
         FragmentManager fragmentManager = getSupportFragmentManager();
         mainUI = fragmentManager.findFragmentById(R.id.main_content_fragment);
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.addToBackStack(null);//"MAIN_UI");
+        //fragmentTransaction.addToBackStack(null);//"MAIN_UI");
        // fragmentManager.findFragmentById(R.id.main_content_frame);
         fragmentTransaction.replace(R.id.container, simFragment, "MAIN_UI").commit();
         //Toast.makeText(this, "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
@@ -226,9 +238,51 @@ public class MainActivity extends AppCompatActivity
         setTitle(pageTitle);
     }
 
+    void confirmSimAndPhone()
+    {
+        if (getSavedValue(SET_SIM).charAt(0)=='-')
+        {
+            Toast.makeText(this, "Need to set SIM first ", Toast.LENGTH_LONG).show();
+            setSimNumber();
+
+        }
+        if (getSavedValue(SET_PHONE1).charAt(0)=='-')
+        {
+            Toast.makeText(this, "Please add phones ", Toast.LENGTH_LONG).show();
+            setPhones();
+
+        }
+        return ;
+    }
+
+    public void sendCommandAndDone(String command)
+    {
+        Intent jIntent=new Intent(this, ConnectDaemonService.class);
+        //M1-00 (cool) or M1-01 (warm)
+        jIntent.putExtra(ConnectDaemonService.DAEMON_COMMAND, command);
+        //Toast.makeText(this, "will send start command to server", Toast.LENGTH_LONG).show();
+        startService(jIntent);
+        mCurrentFragment.backToMain();
+    }
+    public void updatePinCommand()
+    {
+        String pin=getSavedValue(SET_PIN);
+        String oldPin=getSavedValue(OLD_PIN);
+        //String p2=getSavedValue(SET_PHONE2);
+        //if (pin.charAt(0)=='-' || )
+        {
+           // return;
+        }
+        String command="M2-"+oldPin+"-"+pin+"-"+pin;
+
+        sendCommandAndDone(command);
+        Toast.makeText(this, ConnectDaemonService.getChinese("M2")+"指令已送出", Toast.LENGTH_LONG).show();
+    }
     void setPin() //make sure only 4 Digits
     //steps : first send the phone number to booster with 0000 PIN and then update the new PIN
     {
+        confirmSimAndPhone();
+
         ReadPinFragment pinFragment=new ReadPinFragment();
         Bundle aBundle=new Bundle();
         aBundle.putString("PREFERENCE_FILE_NAME", getApplication().getPackageName()+".profile");
@@ -250,14 +304,29 @@ public class MainActivity extends AppCompatActivity
     public void savePhoneNumber(View v)
     {
         ((ReadPhoneFragment)mCurrentFragment).saveData();
+        String pin=getSavedValue(SET_PIN);
+        String p1=getSavedValue(SET_PHONE1);
+        String p2=getSavedValue(SET_PHONE2);
+        if (p1.charAt(0)=='-')
+        {
+            closeFragment(v);
+            return;
+        }
+        String command="M3-"+pin+"-"+p1+"-";
+        if (p2.charAt(0)!='-') command += p2;
+        sendCommandAndDone(command);
+        Toast.makeText(this, ConnectDaemonService.getChinese("M3")+"指令已送出", Toast.LENGTH_LONG).show();
     }
-    public void closePhoneFragment(View v)
-    {
-        ((ReadPhoneFragment)mCurrentFragment).backToMain();
-    }
+
     MySimpleFragment mCurrentFragment;
     void setPhones()
     {
+        if (getSavedValue(SET_SIM).charAt(0)=='-')
+        {
+            Toast.makeText(this, "Need to set SIM first ", Toast.LENGTH_LONG).show();
+            setSimNumber();
+
+        }
         ReadPhoneFragment phoneFragment=new ReadPhoneFragment();
         Bundle aBundle=new Bundle();
         aBundle.putString("PREFERENCE_FILE_NAME", getApplication().getPackageName()+".profile");
@@ -266,7 +335,7 @@ public class MainActivity extends AppCompatActivity
         FragmentManager fragmentManager = getSupportFragmentManager();
         mainUI = fragmentManager.findFragmentById(R.id.main_content_fragment);
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.addToBackStack(null);//"MAIN_UI");
+        //fragmentTransaction.addToBackStack(null);//"MAIN_UI");
         fragmentTransaction.replace(R.id.container, phoneFragment, "MAIN_UI").commit();
         mCurrentFragment=phoneFragment;
         if (getSavedValue(SET_PHONE1).charAt(0)=='-')
@@ -277,10 +346,12 @@ public class MainActivity extends AppCompatActivity
         setTitle(pageTitle);
     }
 
+
     public void startWarmer(View v)
     {
-        Toast.makeText(this, "will send start command to server", Toast.LENGTH_LONG).show();
-        ((SetWarmerFragment)mCurrentFragment).backToMain();
+        String command= "M1-01";
+        sendCommandAndDone(command);
+       Toast.makeText(this, ConnectDaemonService.getChinese(command)+"指令已送出", Toast.LENGTH_LONG).show();
     }
 
     public void startAirCondition(View v)
@@ -289,6 +360,7 @@ public class MainActivity extends AppCompatActivity
     }
     void selectWarmerCooler()
     {
+        confirmSimAndPhone();
         SetWarmerFragment airFragment=new SetWarmerFragment();
         Bundle aBundle=new Bundle();
         aBundle.putString("PREFERENCE_FILE_NAME", getApplication().getPackageName()+".profile");
@@ -309,23 +381,40 @@ public class MainActivity extends AppCompatActivity
 
     void setOneBoot()
     {
-        Toast.makeText(this, "PENDING construction of " + mCommand, Toast.LENGTH_LONG).show();
+        confirmSimAndPhone();
+        //PICK4WHAT=ONE_BOOT_PARAMS;
+        Intent pIntent=new Intent(this, PickActivity.class);
+        pIntent.putExtra(PICK4WHAT, ONE_BOOT_PARAMS);
+        startActivityForResult(pIntent, PICK_ONE);
+        //Toast.makeText(this, "PENDING construction of " + mCommand, Toast.LENGTH_LONG).show();
     }
+
+    public static final String N_BOOT_PARAMS="NBOOT_PARAM";
+    public static final String ONE_BOOT_PARAMS="1NBOOT_PARAM";
+
+    public static String PICK4WHAT="WHICH_PARAM";
 
     void setMultipleBoot()
     {
+        confirmSimAndPhone();
+        //PICK4WHAT=N_BOOT_PARAMS;
         Intent pIntent=new Intent(this, PickActivity.class);
-        //pIntent.putExtra(CITIZEN_ID, mCitizenId);
+        pIntent.putExtra(PICK4WHAT, N_BOOT_PARAMS);
         //pIntent.putExtra(PAGE_TITLE, mPageTitles[5]);
         //pIntent.putExtra(mFixKey, fixMsg);
-        startActivityForResult(pIntent, PICK_ALL);
+        startActivityForResult(pIntent, PICK_N);
         //Toast.makeText(this, "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
     }
 
     public void startEngine(View v)
     {
-        Toast.makeText(this, "will send start command to server", Toast.LENGTH_LONG).show();
-        ((StartEngineFragment)mCurrentFragment).backToMain();
+        String command="M5-";
+        String howLong=((EditText)(v.getRootView().findViewById(R.id.last4))).getText().toString();
+        int i4=Integer.parseInt(howLong);
+        i4=(i4>30)?30:i4;
+        command += new DecimalFormat("0#").format(i4);
+        sendCommandAndDone(command);
+        Toast.makeText(this, ConnectDaemonService.getChinese("M5")+"指令已送出", Toast.LENGTH_LONG).show();
     }
 
     public void closeFragment(View v)
@@ -334,6 +423,7 @@ public class MainActivity extends AppCompatActivity
     }
     void startNow()
     {
+        confirmSimAndPhone();
         StartEngineFragment startEngineFragment=new StartEngineFragment();
         Bundle aBundle=new Bundle();
         aBundle.putString("PREFERENCE_FILE_NAME", getApplication().getPackageName()+".profile");
@@ -351,23 +441,30 @@ public class MainActivity extends AppCompatActivity
     }
     public void stopEngine(View v)
     {
-        Toast.makeText(this, "will send stop command to server", Toast.LENGTH_LONG).show();
+        String command="M4-00";
+        //String howLong=((EditText)(v.getRootView().findViewById(R.id.last4))).getText().toString();
+        //int i4=Integer.parseInt(howLong);
+        //i4=(i4>30)?30:i4;
+        //command += new DecimalFormat("0#").format(i4);
+        sendCommandAndDone(command);
+        Toast.makeText(this, ConnectDaemonService.getChinese(command)+"指令已送出", Toast.LENGTH_LONG).show();
     }
     void stopNow()
     {
-        StartEngineFragment startEngineFragment=new StartEngineFragment();
+        confirmSimAndPhone();
+        StopEngineFragment stopEngineFragment=new StopEngineFragment();
         Bundle aBundle=new Bundle();
         aBundle.putString("PREFERENCE_FILE_NAME", getApplication().getPackageName()+".profile");
-        startEngineFragment.setArguments(aBundle);
+        stopEngineFragment.setArguments(aBundle);
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         mainUI = fragmentManager.findFragmentById(R.id.main_content_fragment);
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.addToBackStack(null);//"MAIN_UI");
-        fragmentTransaction.replace(R.id.container, startEngineFragment, "MAIN_UI").commit();
-        mCurrentFragment=startEngineFragment;
+        fragmentTransaction.replace(R.id.container, stopEngineFragment, "MAIN_UI").commit();
+        mCurrentFragment=stopEngineFragment;
 
-        pageTitle=getResources().getString(R.string.start_engine);
+        pageTitle=getResources().getString(R.string.shut_down_engine);
         setTitle(pageTitle);
     }
     
@@ -433,6 +530,8 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    public static final int PICK_ONE=61;
+    public static final int PICK_N=66;
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data)
     {

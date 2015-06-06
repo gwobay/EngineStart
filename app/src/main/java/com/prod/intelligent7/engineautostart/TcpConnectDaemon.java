@@ -63,9 +63,12 @@ public class TcpConnectDaemon extends Thread
 	//PostOffice myPostOffice;
 	final int Q_SIZE=20;
 
-	static int mHeartBeatInterval=60;
+	int mHeartBeatInterval;
 	//can be changed in file
-
+	int myMODE;
+	public static int MODE_REPEAT=1440;
+	public static int MODE_ONCE=1;
+	public static int MODE_COUNT=10;
 
 	Vector<DataUpdateListener> sniffers;
 	
@@ -94,12 +97,18 @@ public class TcpConnectDaemon extends Thread
 	{
 		mHost=server;
 		mPort=port;
+		mySocket=null;
+		outBoundDataDataQ=null;
+		socketInDataQ=null;
+		init();
 	}
 
 	public TcpConnectDaemon(Socket clientSkt) {
 		// TODO Auto-generated constructor stub
 		if (clientSkt == null) return;
 		mySocket = new SimpleSocket(clientSkt);
+		outBoundDataDataQ=null;
+		socketInDataQ=null;
 		init();
 	}
 
@@ -107,33 +116,30 @@ public class TcpConnectDaemon extends Thread
 	//TODO : update following data from saved 
 	static String myNickName="";
 	static String mySimIccId="";
+
 	private void init()
 	{
-		if (mySocket==null) return;
-		myName=null;
+		//if (mySocket==null) return;
+		//myName=null;
 		//mContext=this;
+		if (mySocket != null)
 		clientAddr=mySocket.getInetAddress();
 		if (outBoundDataDataQ==null)
 		outBoundDataDataQ = new ArrayBlockingQueue<String>(Q_SIZE, true);
+		if (socketInDataQ==null)
+			socketInDataQ = new ArrayBlockingQueue<String>(Q_SIZE, true);
 		//socketOutDataQ = new ArrayBlockingQueue<String>(Q_SIZE, true);
-		friendQ=new HashMap<String, ArrayBlockingQueue<String> >();
-
-		sniffers=new Vector<DataUpdateListener>();
+		//friendQ=new HashMap<String, ArrayBlockingQueue<String> >();
+		//sniffers=new Vector<DataUpdateListener>();
+		if (log==null)
 		log=Logger.getAnonymousLogger();
-
-	String fileName=MainActivity.package_name+".profile";//getApplication().getPackageName()+".profile";
-		SharedPreferences mSPF = mContext.getSharedPreferences(fileName, Context.MODE_PRIVATE);
-		//SharedPreferences.Editor editor = mSPF.edit();//prefs.edit();
-		//String pwd=MainActivity.SET_PIN;//getResources().getString(R.string.pin_setting);
-		myName=mSPF.getString(MainActivity.SET_PHONE1, "--");//key, value);
-		myNickName=mSPF.getString(MainActivity.SET_PHONE2, "--");//key, value);
-		mySimIccId=mSPF.getString(MainActivity.SET_SIM, "--");//key, value);
-		//editor.commit();
-
-		myToken="<" + myName +","+ myNickName+"!"+mySimIccId+">";
-		//outBoundDataDataQ.add(myToken);
 	}
 
+	public void setModeInterval(int mode, int interval) //in milliseconds
+	{
+		myMODE=mode;
+		mHeartBeatInterval=interval;
+	}
 	public void attachToService(Service who)
 	{
 		mContext=who;
@@ -145,6 +151,9 @@ public class TcpConnectDaemon extends Thread
 
 	public ArrayBlockingQueue<String> getOutDataQ()
 	{
+
+		if (outBoundDataDataQ==null)
+			outBoundDataDataQ=new ArrayBlockingQueue<String>(Q_SIZE, true);
 		return outBoundDataDataQ;
 	}
 
@@ -342,9 +351,16 @@ public class TcpConnectDaemon extends Thread
 			//new host and port for next connection
 			//save them to shared pref
 			//change the value of
-			String[] terms=msg.split("-");
+			String[] terms=msg.split("-"); //M6-ip-port
 			mHost=terms[1];
 			mPort=Integer.parseInt(terms[2]);
+			String fileName=MainActivity.package_name+".profile";//getApplication().getPackageName()+".profile";
+			SharedPreferences mSPF = mContext.getSharedPreferences(fileName, Context.MODE_PRIVATE);
+			SharedPreferences.Editor editor = mSPF.edit();//prefs.edit();
+			//String pwd=MainActivity.SET_PIN;//getResources().getString(R.string.pin_setting);
+			editor.putString(ConnectDaemonService.SERVER_IP, mHost);
+			editor.putString(ConnectDaemonService.SERVER_PORT, terms[2]);
+			editor.commit();
 
 		}
 		else if (!sender.equalsIgnoreCase(mySimIccId)){
@@ -375,7 +391,7 @@ public class TcpConnectDaemon extends Thread
 	public void putOutBoundMsg(String msg)
 	{
 		final String outMsg=msg;
-		
+		getOutDataQ();
 		new Thread(new Runnable(){
 			public void run(){
 				
@@ -418,6 +434,8 @@ public class TcpConnectDaemon extends Thread
 	public void sendDataToServer()
 	{
 		//move data to my send poll
+		if (mySocket==null) return;
+		if (!mySocket.isSktConnected() || !mySocket.hasOutStream()) return;
 		ArrayList<String> toSend=new ArrayList<String>();
 		toSend.add(myToken);
 		while (outBoundDataDataQ.size() > 0){
@@ -430,16 +448,21 @@ public class TcpConnectDaemon extends Thread
 		}
 		boolean trySend=true;
 
-		while (mySocket.isSktConnected() && mySocket.hasOutStream() )
+		while (mySocket!= null && mySocket.isSktConnected() && mySocket.hasOutStream() )
 				//outBoundDataDataQ.size() > 0)
 		{			
-			String socketData=toSend.remove(0);
 
-			if (socketData != null)
+			if (toSend.size() > 0)
 			{
-				if (!socketSendData(socketData+myToken+"$")) break;
-				saveDataToDb(socketData);
+				String socketData=toSend.remove(0);
+				String msg=socketData;
+				if (socketData.charAt(0) != '<')
+					msg=socketData+myToken;
 
+				if (!socketSendData(msg+"$")) break;
+
+				if (socketData.charAt(0) != '<')
+				saveDataToDb(socketData);
 				try {
 					Thread.sleep(500);
 				} catch (InterruptedException e) {
@@ -449,7 +472,7 @@ public class TcpConnectDaemon extends Thread
 			else //no more data for server
 			{
 				//send last token
-				socketSendData(myToken);
+				socketSendData(myToken+"$");
 				try {
 					Thread.sleep(500);
 				} catch (InterruptedException e) {
@@ -471,8 +494,15 @@ public class TcpConnectDaemon extends Thread
 				}
 			}
 		}
+		toSend.clear();
+		toSend=null;
 	}
-	
+	boolean hasCommand;
+	public void wakeUp4Command()
+	{
+		hasCommand=true;
+		interrupt();
+	}
 	Thread writeThread;
 	void startWriteThread()
 	{
@@ -486,21 +516,62 @@ public class TcpConnectDaemon extends Thread
 	}
 
 	boolean imDone;
+	int iSuccessful=0;
 	public void run()
 	{
 		writeThread=null;
 		//mParser=new MessageParser();
+		boolean wait30=false;
 		imDone=false;
 		//imChatLine=false;
 		do {
+			if (wait30)
+			{
+				try {
+					sleep(30*000);
+				} catch(InterruptedException e){
+
+				}
+			}
+			boolean iCanStart=false;
+			//if (myName.charAt(0) != '-' &&
+				//mySimIccId .charAt(0) != '-')
+			//iCanStart=true;
+			do  {
+				String fileName=MainActivity.package_name+".profile";SharedPreferences mSPF = mContext.getSharedPreferences(fileName, Context.MODE_PRIVATE);
+				myName = mSPF.getString(MainActivity.SET_PHONE1, "--");//key, value);
+				myNickName = mSPF.getString(MainActivity.SET_PHONE2, "--");//key, value);
+				mySimIccId = mSPF.getString(MainActivity.SET_SIM, "--");//key, value);
+				iCanStart=(myName.charAt(0) != '-' &&
+						mySimIccId .charAt(0) != '-');
+				if (iCanStart) break;
+				try {
+					sleep(60*1000);
+				} catch (InterruptedException e){}
+
+			} while (!iCanStart);
+
+			myToken="<" + myName +","+ myNickName+"!"+mySimIccId+">";
 
 			try {
 				mySocket = new SimpleSocket(mHost, mPort);
-				init();
-			} catch (UnknownHostException e) {
-			} catch (IOException b) {
-			}
+				//outBoundDataDataQ.put(myToken);
+				// //token was add to by send thread to make sure it sends first
+				//init();
+				iSuccessful++;
 
+			}
+			catch (UnknownHostException e) {
+				log.warning("failed to connect to server at "+mPort+"@"+mHost);
+				wait30=true;
+				continue;
+			} catch (IOException b) {
+				wait30=true;
+				continue;
+			}
+			if (mySocket==null) return;
+			log.info("daemon connected at " +
+					DateFormat.getTimeInstance().format(new Date()));
 			startWriteThread();
 			while (mySocket.isSktConnected() && mySocket.hasInStream()) {
 				if (stopFlag) break;
@@ -510,7 +581,6 @@ public class TcpConnectDaemon extends Thread
 			if (writeThread != null)
 				try {
 					writeThread.join();
-
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -520,17 +590,21 @@ public class TcpConnectDaemon extends Thread
 			//if (mFDB != null) mFDB.cleanUp();
 			if (mySocket != null)//&& !imChatLine)
 				mySocket.close();
-			System.out.println("I am done with processing and closed at " +
+			log.info("daemon socket closed connection with " + clientAddr);
+			log.info("Daemon is done with processing and closed at " +
 					DateFormat.getTimeInstance().format(new Date()));
-
-			log.info("server socket closed connection with " + clientAddr);
-			log.info("will restart connection in 60 seconds");
+			log.info("will restart connection in "+mHeartBeatInterval/1000+" seconds");
+			if (iSuccessful > myMODE) return;
+			hasCommand=false;
 			try {
-				Thread.sleep(mHeartBeatInterval*1000);
+				Thread.sleep(mHeartBeatInterval);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
-				break;
+				if (!hasCommand) {
+					e.printStackTrace();
+					log.warning("!!Woken up for unknown reason!!");
+					break;
+				}
 			}
 
 		} while (!imDone);
@@ -558,7 +632,7 @@ public class TcpConnectDaemon extends Thread
 		sql += " message text,";
 		sql += " i_o char(1),";
 		sql += " sender char(20),";
-		sql += " receiver char(20);";
+		sql += " receiver char(20));";
 		//sql += " event_description text,";
 		//sql += " status char(8) not null default 'new',";
 		//sql += " participants char(8) default '0' );";//new, cancle, read, join
@@ -603,12 +677,21 @@ public class TcpConnectDaemon extends Thread
 
 	}
 
+	void confirmTableExist(String table)
+	{
+		if (!DbProcessor.ifTableExists(mContext, mTableName))
+		{
+			DbProcessor.createTable(mContext, createTableSql());
+			//checkForServerData();
+		}
+	}
 	void doInsert(String tableName, ContentValues aRow)
 	{
-		startDb();
+		//startDb();
+		confirmTableExist(tableName);
 		String eMsg="";
 		try {
-			mDb.insert(tableName, null, aRow);//mContentValues);
+			DbProcessor.insertTable(mContext, tableName, null, aRow);//mContentValues);
 		} catch (SQLiteConstraintException e){ log.warning(e.getMessage());}
 		catch (SQLiteException e){ log.warning(e.getMessage());}
 		//if (eMsg.length() >0)
@@ -616,6 +699,7 @@ public class TcpConnectDaemon extends Thread
 	}
 
 	void saveDataToDb(String data, String sender, String receiver, String io){
+		confirmTableExist("event_records");
 		String sql="insert into event_records ";
 		long when=new Date().getTime();
 		String message=data;
@@ -624,7 +708,7 @@ public class TcpConnectDaemon extends Thread
 			when = Long.parseLong(data.substring(i0x+1));
 			message=data.substring(0, i0x);
 		}
-		sql += ("(event_time, message, sender, receiver, io) values ("+when+", '"+
+		sql += ("(event_time, message, sender, receiver, i_o) values ("+when+", '"+
 					message+"', '"+sender+"', '"+receiver+"', '"+io+"' );"	);
 		try {
 			DbProcessor.insertTable(mContext, sql);

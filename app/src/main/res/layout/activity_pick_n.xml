@@ -9,7 +9,7 @@
     <fragment
         android:id="@+id/date_fragment"
         android:name="com.prod.intelligent7.engineautostart.DatePickerFragment"
-        tools:layout="@layout/layout_n_boots"
+        tools:layout="@layout/layout_n_boots_old"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 <!--

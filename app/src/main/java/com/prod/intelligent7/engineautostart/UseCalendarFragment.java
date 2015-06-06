@@ -2,35 +2,32 @@ package com.prod.intelligent7.engineautostart;
 
 
 import android.app.Activity;
-import android.support.v4.app.Fragment;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.graphics.Point;
-import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.os.Bundle;
-import android.util.Pair;
-import android.util.TypedValue;
-import android.view.Display;
+import android.support.v4.app.FragmentManager;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.ImageView;
+import android.widget.CalendarView;
+import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
-public class ReadSimFragment extends Fragment {
+import java.text.DecimalFormat;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
+
+public class UseCalendarFragment extends MySimpleFragment {
 	public static final String BKP_PASSWORD="BKP_PASSWORD";
-	
-	public ReadSimFragment() {
+
+	public UseCalendarFragment() {
 		// TODO Auto-generated constructor stub
 	}
 
@@ -74,10 +71,14 @@ public class ReadSimFragment extends Fragment {
 			mIdDigits[i].invalidate();
 		}
 	}
+	TextView mBlinking;
+	int iBlinking;
+
 	void showFocusColor(TextView v)
 	{
-		showTheRestNormal();
-		v.setBackgroundColor(0xf500ff00);
+		//showTheRestNormal();
+		//v.setBackgroundColor(0xf500ff00);
+		showBlinking(v);
 		v.invalidate();
 	}
 	void showNormalColor(TextView v)
@@ -100,9 +101,9 @@ public class ReadSimFragment extends Fragment {
 			if (mCurrentText!=null) showNormalColor(mCurrentText);
 			mRow=myRow;
 			mColumn=myColumn;
-			showFocusColor(mIdDigits[mColumn+mRow*mTotalColumn]);
+			//showFocusColor(mIdDigits[mColumn+mRow*mTotalColumn]);
 			mCurrentText=mIdDigits[mColumn+mRow*mTotalColumn];
-			getDigits();
+			readDigitForNewCell();
 		}
 	}
 	
@@ -120,7 +121,7 @@ public class ReadSimFragment extends Fragment {
 			showFocusColor(mPasswords[which]);
 			mCurrentText=mPasswords[which];
 			mColumn=which-1;
-			getDigits();
+			readDigitForNewCell();
 		}
 	}
 	
@@ -213,7 +214,7 @@ public class ReadSimFragment extends Fragment {
 		LinearLayout gID=new LinearLayout(mContext);
 		gID.setLayoutParams(mwParams);
 		gID.setOrientation(LinearLayout.VERTICAL);//0HORIZONTAL, 1Vertical);
-		gID.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.TOP);
+		gID.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.TOP);
 		int txtSize=30;
 		if (isLargeScreen) txtSize=40;
 	 	//TextView idLabel=new TextView(mContext);
@@ -232,18 +233,46 @@ public class ReadSimFragment extends Fragment {
 
 			idRow.setOrientation(LinearLayout.HORIZONTAL);//0HORIZONTAL, 1Vertical);
 			idRow.setGravity(1);
+			TextView whichPwd=new TextView(mContext);
+			whichPwd.setLayoutParams(new LinearLayout.LayoutParams(mDisplayWidth /6, LinearLayout.LayoutParams.WRAP_CONTENT, 0.4f));
+			whichPwd.setGravity(Gravity.TOP|Gravity.LEFT);
+			if (k==0) whichPwd.setText(getResources().getString(R.string.enter_old_pin));
+			else if (k==1) whichPwd.setText(getResources().getString(R.string.enter_new_pin));
+			else if (k==2) whichPwd.setText(getResources().getString(R.string.confirm_new_pin));
+			final int which1=k;
+			whichPwd.setOnClickListener(new LL(k, 0));//
+			/*// setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					mRow=which1;
+					mColumn=0;
+					mCurrentText=mIdDigits[mRow*mTotalColumn];
+				}
+			});*/
+			whichPwd.setTextSize(txtSize* 2/ 3);
+			idRow.addView(whichPwd);
+
 			for (int i = 0; i < mTotalColumn; i++) {
 				int j=i+k*mTotalColumn;
 				mIdDigits[j] = new TextView(mContext);
-				mIdDigits[j].setWidth(mDisplayWidth/10);
-				//mIdDigits[j].
+				mIdDigits[j].setWidth(txtSize * 12 / 10);
 				mIdDigits[j].setTextSize(txtSize);// * 9 / 10);
 				mIdDigits[j].setText("X");
 				mIdDigits[j].setGravity(Gravity.CENTER);
-				if (isLargeScreen) mIdDigits[j].setBackgroundResource(R.drawable.shape_rect_orange_large);
-				else mIdDigits[j].setBackgroundResource(R.drawable.shape_rect_orange_large);
+				int showColor=0;
+				if (isLargeScreen)
+				{
+					//mTextBackground=R.drawable.shape_rect_blue_large;
+					showColor=R.drawable.shape_rect_orange_large;
+				}
+				else  {
+					//mTextBackground=R.drawable.shape_rect_blue;
+					showColor=R.drawable.shape_rect_orange;
+				}
+				mIdDigits[j].setBackgroundResource(showColor);
 				mIdDigits[j].setClickable(true);
 				mIdDigits[j].setOnClickListener(new LL(k, i));
+				mIdDigits[j].setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT, 0.1f));
 				idRow.addView(mIdDigits[j]);
 			}
 			gID.addView(idRow);
@@ -290,21 +319,24 @@ public class ReadSimFragment extends Fragment {
 	}
 
 
-	void getDigits()
+	void readDigitForNewCell()
 	{
 		int iPos=mColumn + mRow*mTotalColumn;
 		if (iPos<0) {mRow=0; mColumn=0; iPos=0;}
 		if (iPos < mTotalColumn*mTotalRow)
 		{
 			mCurrentText=mIdDigits[iPos];
-			showNormalColor(mCurrentText);
+			//showNormalColor(mCurrentText);
+			showBlinking(mCurrentText);
 		}
 		else
 		{
 			mColumn=mTotalColumn-1;
 			mRow=mTotalRow-1;
-			//mOK.setTextColor(Color.RED);
-			mOK.setBackgroundColor(Color.RED);
+			mOK.setTextColor(Color.RED);
+			//mOK.setBackgroundColor(Color.RED);
+			//iBlinking=99;
+			showBlinking(mOK);
 			return;
 		}
 
@@ -347,11 +379,12 @@ public class ReadSimFragment extends Fragment {
 
 					if (mCurrentText != null) {
 						mCurrentText.setText(s);
-						mCurrentText.setBackgroundResource(R.drawable.transition);
-						((TransitionDrawable)mCurrentText.getBackground()).startTransition (300);
+						//mCurrentText.setBackgroundResource(mTextBackground);//transition);
+						//((TransitionDrawable)mCurrentText.getBackground()).startTransition (300);
+						stopBlinking(mCurrentText);
 					}
 					mColumn++;
-					getDigits();
+					readDigitForNewCell();
 
 				}
 			});
@@ -391,6 +424,8 @@ public class ReadSimFragment extends Fragment {
 		aBt.getButton().setTextColor(Color.WHITE);
 		aBt.getButton().setOnClickListener(new Button.OnClickListener() {
 			public void onClick(View v) {
+				//if (v.getAnimation()!=null) v.getAnimation().cancel();
+				//mOK.setBackgroundResource(R.drawable.shape_oval_green_large);
 				saveData();
 			}
 		});
@@ -424,20 +459,23 @@ public class ReadSimFragment extends Fragment {
 		aBt=new ButtonInBox(getActivity(),"<-", false);
 
 		aBt.setLayoutParams(okParams);
-		aBt.setGravity(Gravity.CENTER_VERTICAL|Gravity.LEFT);
+		aBt.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
 		aBt.getButton().setTextColor(Color.MAGENTA);
 		aBt.getButton().setOnClickListener(new Button.OnClickListener() {
 			public void onClick(View v) {
+				stopBlinking(mCurrentText);
 				mColumn--;
-				if (mColumn <0)
-				{
-					mColumn=mTotalColumn;
+				if (mColumn < 0) {
+					mColumn = mTotalColumn;
 					mRow--;
-					if (mRow< 0) { mRow=0; mColumn=0;}
+					if (mRow < 0) {
+						mRow = 0;
+						mColumn = 0;
+					}
 				}
-				int myPos=mColumn+mRow*mTotalColumn;
+				int myPos = mColumn + mRow * mTotalColumn;
 				mIdDigits[myPos].setText("_");
-				getDigits();
+				readDigitForNewCell();
 			}
 		});
 		/* if (isLargeScreen)
@@ -482,6 +520,8 @@ public class ReadSimFragment extends Fragment {
 			//setOvalAttr(aBt, "ok", false);
 			aBt.getButton().setOnClickListener(new Button.OnClickListener() {
 				public void onClick(View v) {
+					//if (v.getAnimation()!=null) v.getAnimation().cancel();
+					//mOK.setBackgroundResource(R.drawable.shape_oval_green);
 					saveData();
 				}
 			});
@@ -495,10 +535,12 @@ public class ReadSimFragment extends Fragment {
 			//setOvalAttr(aBt, "0", false);
 			aBt.getButton().setOnClickListener(new Button.OnClickListener() {
 				public void onClick(View v) {
-					if (mCurrentText != null)
+					if (mCurrentText != null) {
 						mCurrentText.setText("0");
+						stopBlinking(mCurrentText);
+					}
 					mColumn++;
-					getDigits();
+					readDigitForNewCell();
 				}
 			});
 			aRow.addView(aBt);
@@ -508,6 +550,7 @@ public class ReadSimFragment extends Fragment {
 		aBt.getButton().setTextColor(Color.MAGENTA);
 		aBt.getButton().setOnClickListener(new Button.OnClickListener() {
 			public void onClick(View v) {
+				stopBlinking(mCurrentText);
 				mColumn--;
 				if (mColumn < 0) {
 					mColumn = mTotalColumn;
@@ -519,7 +562,7 @@ public class ReadSimFragment extends Fragment {
 				}
 				int myPos = mColumn + mRow * mTotalColumn;
 				mIdDigits[myPos].setText("_");
-				getDigits();
+				readDigitForNewCell();
 			}
 		});
 
@@ -557,167 +600,83 @@ public class ReadSimFragment extends Fragment {
 		return devider;
 
 	}
-	void saveData()
+
+	@Override
+	public void saveData()
 	{
-		String simCode="";
-		for (int i=0; i<mIdDigits.length; i++)
-		{
-			String aDigit=mIdDigits[i].getText().toString();
-			if (aDigit=="" || aDigit==" " || aDigit.length() > 1 || aDigit.charAt(0) > '9' || aDigit.charAt(0)<'0' ) {
-				simCode += "X";
-				Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.bad_data_entry), Toast.LENGTH_LONG).show();
-				mColumn=i % mTotalColumn;
-				mRow = i / mTotalColumn;
-				mCurrentText=mIdDigits[i];
-				return;
-			}
-			else
-				simCode += aDigit;
-		}
+		String old1=MainActivity.GET_PHONE_OLD;//getResources().getString(R.string.old_pin);
+		String oldPhone=((MainActivity)getActivity()).getSavedValue(old1);
+		((MainActivity)getActivity()).setPreferenceValue(old1, oldPhone);
+		String key1=MainActivity.SET_PHONE1;
+		String phone1=((EditText) mRootView.findViewById(R.id.phone1)).getText().toString();
+		String key2=MainActivity.SET_PHONE2;
+		String phone2=((EditText) mRootView.findViewById(R.id.phone2)).getText().toString();
 
-
-    	String key=MainActivity.SET_SIM;//getResources().getString(R.string.old_pin);
-		((MainActivity)mActivity).setPreferenceValue(key, simCode);
+		((MainActivity)getActivity()).setPreferenceValue(key1, phone1);
+		((MainActivity)getActivity()).setPreferenceValue(key2, phone2);
 
         backToMain();
 	}
 
-    void backToMain()
-    {
+	@Override
+	public void backToMain()
+	{
 		MainActivity mAc=(MainActivity)getActivity();
-		mAc.setDefaultTitle();
-		mAc.getSupportFragmentManager().beginTransaction().remove(this).commit();
-        //getActivity().getSupportFragmentManager().popBackStackImmediate();
-		if (mAc.mainUI!=null){
-			LinearLayout aL= (LinearLayout)mAc.mainUI.getView();
-			if (aL==null) return;
-			aL.removeAllViews();
-			LinearLayout newV=((MainActivityFragment)mAc.mainUI).repaintButtons();
-			aL.addView(newV);
-		}
+		//mAc.setDefaultTitle();
+		FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
 
-    }
+		fragmentManager.beginTransaction().remove(this).commit();
+		//fragmentManager.popBackStackImmediate();
+		//mainUI = fragmentManager.findFragmentById(R.id.main_content_fragment);
 
+		//Fragment aFg=fragmentManager.findFragmentById(R.id.main_content_fragment);//R.id.container);
+
+		//mAc.setContentView(null);
+		//mAc.setContentView(R.layout.activity_main);
+	}
+
+	public void noAction(View v){
+		backToMain();
+	}
+	TextView responseView;
+
+	public void setCalendarDate(View v){
+		View rootV=v.getRootView();
+		CalendarView cV= (CalendarView) rootV.findViewById(R.id.calendarView);
+		long getTime=cV.getDate();
+		//TimeZone.setDefault(TimeZone.getTimeZone("Hongkong"));
+		GregorianCalendar gToday=new GregorianCalendar(TimeZone.getTimeZone("Hongkong"));
+		gToday.setTimeInMillis(getTime);
+		responseView.setText(new DecimalFormat("00").format(gToday.get(Calendar.YEAR)) + "/" +
+				(new DecimalFormat("00")).format(gToday.get(Calendar.MONTH)) + "/" +
+				(new DecimalFormat("00")).format(gToday.get(Calendar.DAY_OF_MONTH)));
+		backToMain();
+	}
+
+	public void setViewToFill(TextView v){
+		responseView=v;
+	}
+	View mRootView;
 	 @Override
 	    public View onCreateView(LayoutInflater inflater, ViewGroup container,
 	            Bundle savedInstanceState) 
 	 {
-		 mActivity=getActivity();
-		 mContext=mActivity;//.getApplicationContext();
-		 getMyScreenSize();
-		 ScrollView sv=new ScrollView(mContext);
-		 sv.setFillViewport(true);
-		 LinearLayout myUI=new LinearLayout(mContext);
-		 myUI.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-				 LinearLayout.LayoutParams.FILL_PARENT));//mmParams);
-		 myUI.setOrientation(LinearLayout.VERTICAL);//0HORIZONTAL, 1Vertical);
-		 myUI.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.TOP);//center_horizontal
-		 myUI.setBackgroundColor(Color.WHITE);
-			 mColumn=0;
-			 mRow=0;
-			 //String pwd=getResources().getString(R.string.label_get_pin);
-			 //mSavedCode=getArguments().getString(pwd);
-			 //mBkpCode=getArguments().getString(BKP_PASSWORD);
-		 /*
-			 char a='1';
-			 String pgTitle=getResources().getString(R.string.label_get_pin);//"Enter Password to Log in";
-			 newUser = false;
-			 if (mSavedCode == null || mSavedCode.length() < 4)
-		 	{
-		 		id.addView(idLabel());
-		 		id.addView(idLine());
-		 		a='A';
-		 		mRow=0;
-		 		//pgTitle=getResources().getString(R.string.setup_new_account);
-		 		newUser=true;
-		 	}
-		*/
-		 /*
-		 	id.addView(passwdLabel());
+		 mRootView=inflater.inflate(R.layout.layout_pick_calendar, container, false);
 
-		 	id.addView(passwordLine());
-		 	*/
-		// myUI.addView(idLabel());
-		 myUI.addView(idLine());
-		 TextView line = new TextView(getActivity());
-		 line.setBackgroundResource(android.R.color.holo_red_dark);
-		 line.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 2));
-		 line.setHeight(2);//(int) Utility.convertDpToPixel(1,this));
-		 myUI.addView(line);
-		// myUI.addView(indicateKeyBoard());
-		 //add key pad
-		 LinearLayout keyPad=new LinearLayout(mContext);//LinearLayout(mContext);
-		 keyPad.setOrientation(LinearLayout.HORIZONTAL);//0HORIZONTAL, 1Vertical);
-		 	//tbHome.addView(passwordLine());
-		 //keyPad.setGravity(17);
-			// mTable=showNButton(3,a);
-			// mTable=showNButton(3,'0');
-		 	//tbHome.addView(mTable);
-		 	//id.addView(tbHome);
-		 TextView desc=new TextView(mContext);
-		 desc.setTextSize(16);
-		 desc.setText(getActivity().getResources().getString(R.string.numeric_pad));
-		 desc.setGravity(Gravity.TOP);
-		 keyPad.addView(desc);
-		 //keyPad.addView(indicateKeyBoard());
-		 if (isLandScape) keyPad.addView(setWideKeyPadButtons());
-		 else
-			 keyPad.addView(setKeyPadButtons());
-         Button bx=new Button(getActivity());
-         int columnSize=30;
-         if (isLargeScreen) {
-             columnSize=30;
-             bx.setBackgroundResource(R.drawable.shape_oval_orange_large);
-         }
-         else {
-             columnSize=20;
-              bx.setBackgroundResource(R.drawable.shape_oval_orange);
-         }
-         bx.setLayoutParams(new LinearLayout.LayoutParams(columnSize+10,
-                                    LinearLayout.LayoutParams.MATCH_PARENT, 0.5f));
-         bx.setGravity(Gravity.CENTER_VERTICAL);
-         bx.setTextSize(columnSize);
-         bx.setTextColor(Color.RED);
-         bx.setText(getActivity().getResources().getString(R.string.back_to_main));
-         //bx.setTextDirection();
-         bx.setOnClickListener(new Button.OnClickListener() {
-             public void onClick(View v) {
-                 backToMain();
-             }
-         });
 
-         keyPad.addView(bx);
-		 myUI.addView(keyPad);
-		 	//GifViewer aGif=new GifViewer(getActivity(), R.drawable.ninja_turtle);
-		 /*
-		 	View rootView = null;
-		    int page=R.layout.gif_view_port;
-		        rootView=inflater.inflate(page, id, false); 
-			ImageView img1=(ImageView)(rootView.findViewById(R.id.gif_view));
-			img1.setBackgroundResource(R.drawable.nija_frames);
-			kpAnimation = (AnimationDrawable) img1.getBackground();
-		 // Start the animation (looped playback by default).
-			kpAnimation.start();
-*/
-		 mColumn=0;
-		 mRow=0;
-		 mCurrentText=mIdDigits[0];
-		// return myUI;
-		 	sv.addView(myUI);
-		 /*
-		 if (mRow==1)
-		 	mCurrentText=mPasswords[0];
-		 	else
-		 		mCurrentText=mAlpha;
-			showFocusColor(mCurrentText);
-		 	mRoot=tbHome;
-		 	//mActivity.setTitle(pgTitle);
-		 	*/
-
-	        return sv;
+		 return mRootView;
 	 }
 
-	int szKeySize;
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+
+		super.onActivityCreated(savedInstanceState);
+		if (mRootView==null) return;
+		//Button v=(Button)mRootView.findViewById(R.id.start_warmer_button);
+		//v.requestFocus();
+
+	}
+		int szKeySize;
 	int mTotalRow;
 	int mTotalColumn;
 	boolean isLargeScreen;
@@ -728,53 +687,5 @@ public class ReadSimFragment extends Fragment {
 	LinearLayout.LayoutParams keyPadParams;
 
 	private int mLogBarHeight;
-	void getMyScreenSize() //if land scape use 10-10 layout, otherwise use 4-4-4-4-4 layout
-	{
-		//Display display = getWindowManager().getDefaultDisplay();
-		WindowManager wm = (WindowManager) getActivity().getSystemService(Context.WINDOW_SERVICE);
-		Display display = wm.getDefaultDisplay();
-		Point size = new Point();
-		display.getSize(size);
-		isLargeScreen=false;
-		int iMaxSize=size.x;
-		mDisplayWidth = size.x;
-		mDisplayHeight = size.y;
-		if (size.y > iMaxSize )iMaxSize=size.y;
-		if (size.y > 850) isLargeScreen=true;
-		keyPadWidth=mDisplayWidth/2;
-		keyPadParams=new LinearLayout.LayoutParams(keyPadWidth, mDisplayHeight/4, 0.5f);
-		if (mDisplayWidth>mDisplayHeight)
-		{
-			isLandScape=true;
-			szKeySize=mDisplayHeight/10;
-			mTotalColumn=10; mTotalRow=2;
-		}
-		else
-		{
-			isLandScape=false;
-			szKeySize=mDisplayHeight/15;
-			mTotalColumn=4; mTotalRow=5;
-		}
-		//If you're not in an Activity you can get the default Display via WINDOW_SERVICE:
-		/*
-		TypedValue tv = new TypedValue();
-		int mActionBarHeight=0;
-		if (getActivity().getTheme().resolveAttribute(
-				android.R.attr.actionBarSize, tv, true)) {
-			mActionBarHeight = TypedValue.complexToDimensionPixelSize(
-					tv.data, getActivity().getResources().getDisplayMetrics());
-		}
-		mDisplayHeight -= mActionBarHeight ;
-		mLogBarHeight = mActionBarHeight*2/3;
-		if (mLogBarHeight < 10) mLogBarHeight=10;
-		mLogBarHeight=0; //now use menu item
-		mDisplayHeight -= mLogBarHeight;
-		int nC=2, nR=4; //# of col. row
-		if (isLandScape) {nC=4; nR=2;}
-		mDisplayHeight -= (8*nR);
-		mDisplayWidth -= 4*nC;
-		//control_height=mDisplayHeight/nR;
-		//control_width=mDisplayWidth/nC;
-		*/
-	}
+
 }

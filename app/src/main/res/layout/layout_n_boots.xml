@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:id="@+id/layout_nboot"
+    android:layout_height="match_parent"
     android:orientation="vertical">
 
     <LinearLayout
@@ -10,13 +12,14 @@
         android:layout_weight="0.35" >
 
         <TextView
-            android:layout_width="76dp"
-            android:layout_height="168dp"
+            android:layout_width="62dp"
+            android:layout_height="200dp"
             android:layout_gravity="left"
             android:text="@string/n_boot_start_time"
-            android:textSize="30dp"
+            android:textSize="25dp"
             android:id="@+id/label_get_boot_time"
-            android:textColor="#ffff231a" />
+            android:textColor="#ffff231a"
+            android:gravity="center_vertical" />
 
         <TimePicker
             android:layout_width="match_parent"
@@ -42,7 +45,7 @@
             android:layout_gravity="left"
             android:id="@+id/label_active_period"
             android:textColor="#ff000000"
-            android:textSize="25dp"
+            android:textSize="20dp"
             android:text="@string/n_boot_active_period" />
 
         <EditText
@@ -87,7 +90,7 @@
             android:layout_gravity="left"
             android:id="@+id/label_idle_period"
             android:textColor="#ff000000"
-            android:textSize="25dp"
+            android:textSize="20dp"
             android:text="@string/n_boot_idle_period" />
 
         <EditText
@@ -108,7 +111,7 @@
             android:layout_weight="0.1"
             android:layout_gravity="left|bottom"
             android:id="@+id/editText8"
-            android:text="@string/minute"
+            android:text="@string/hour"
             android:textColor="#ff000000"
             android:textSize="20dp"
             android:gravity="center_horizontal" />
@@ -125,13 +128,14 @@
         android:layout_weight="0.35" >
 
         <TextView
-            android:layout_width="72dp"
-            android:layout_height="201dp"
+            android:layout_width="62dp"
+            android:layout_height="200dp"
             android:layout_gravity="left|bottom"
-            android:textSize="30dp"
+            android:textSize="25dp"
             android:text="@string/n_boot_end_time"
             android:id="@+id/label_get_end_time"
-            android:textColor="#ff11a0ff" />
+            android:textColor="#ff11a0ff"
+            android:gravity="center" />
 
 
         <TimePicker

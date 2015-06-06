@@ -8,8 +8,8 @@
     <string name="backup_server">220.134.85.189</string>
     <string name="backup_test_server">220.134.85.189</string>
 
-    <string name="port">8686</string>
-    
+    <string name="port">9696</string>
+    <string name="heart_beat_interval">60</string>
     <!-- for command key /-->
     <string name="cmd_open_log">OPEN_LOG</string>
     <string name="cmd_clean_log">CLEAN_LOG</string>
@@ -41,6 +41,9 @@
     <string name="label_get_sim">ENTER_SIMM</string>
     <string name="label_get_pin">ENTER_PIN</string>
     <string name="label_get_phone">ENTER_PHONE</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
     <!-- end sim, pin, phone /-->
 
 </resources>

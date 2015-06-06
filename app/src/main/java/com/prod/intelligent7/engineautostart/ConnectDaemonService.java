@@ -19,8 +19,10 @@ package com.prod.intelligent7.engineautostart;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Vector;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Logger;
 
 //import com.google.android.gms.gcm.GoogleCloudMessaging;
 
@@ -60,7 +62,7 @@ public class ConnectDaemonService extends Service {
     public static Ringtone noise=null;
     private NotificationManager mNotificationManager;
     NotificationCompat.Builder builder;
-
+    Logger log;
     public ConnectDaemonService() {
         super();
     }
@@ -111,24 +113,61 @@ public class ConnectDaemonService extends Service {
     ArrayBlockingQueue<String> outBoundMailBox;
     @Override
     public void onCreate() {
+        log=Logger.getAnonymousLogger();
+        log.info(getPackageName()+" got activated ");
         if (mDaemon==null ||
                 !mDaemon.isAlive())
         startDaemon();
     }
-
+    public static final String SERVER_IP="server_ip";
+    public static final String SERVER_PORT="server_port";
     void startDaemon()
     {
-        String mHost=getSharedPreferences(MainActivity.package_name+".profile", MODE_PRIVATE).getString("SERVER_IP", "200.133.173.175");
+        mDaemon=null;
+        String mHost=getSharedPreferences(MainActivity.package_name+".profile", MODE_PRIVATE).getString(SERVER_IP, "220.134.85.189");
         //start a thread to talk to server every minute
-        String mPort=getSharedPreferences(MainActivity.package_name+".profile", MODE_PRIVATE).getString("SERVER_PORT", "8686");
+
+        String mPort=getSharedPreferences(MainActivity.package_name+".profile", MODE_PRIVATE).getString(SERVER_PORT, "9696");
         //start a thread to talk to server every minute
+        if (mHost.charAt(0)=='-'){
+            mHost=getResources().getString(R.string.prod_server);
+            mPort=getResources().getString(R.string.port);
+        }
         mDaemon=new TcpConnectDaemon(mHost, Integer.parseInt(mPort));
+        mDaemon.setModeInterval(TcpConnectDaemon.MODE_REPEAT, 60*1000);
+        Vector<String> keep=null;
+        if (outBoundMailBox!= null && outBoundMailBox.size() > 0)
+        {
+            keep=new Vector<String>();
+            while (outBoundMailBox.size()> 0)
+            {
+                try {
+                    keep.add(outBoundMailBox.take());
+                } catch(InterruptedException e){}
+            }
+        }
         outBoundMailBox=mDaemon.getOutDataQ();
+        if (keep!=null && keep.size() > 0)
+        {
+            for (int i=0; i<keep.size(); i++){
+                try {
+                    outBoundMailBox.put(keep.get(i));
+                } catch(InterruptedException e){}
+            }
+            keep.clear();
+            keep=null;
+        }
         mDaemon.attachToService(this);
         mDaemon.start();
 
     }
 
+    void confirmDaemonAlive()
+    {
+        if (mDaemon!=null && mDaemon.isAlive()) return;
+        mDaemon=null;
+        startDaemon();
+    }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // The service is starting, due to a call to startService()
@@ -141,13 +180,12 @@ public class ConnectDaemonService extends Service {
     public IBinder onBind(Intent intent) {
         // A client is binding to the service with bindService()
         String command=intent.getExtras().getString(DAEMON_COMMAND);
+        confirmDaemonAlive();
         if (command != null)
         {
-            if (outBoundMailBox==null) startDaemon();
-            if (mDaemon!=null && mDaemon.isAlive())
                 mDaemon.putOutBoundMsg(command);
+            mDaemon.wakeUp4Command();
         }
-
         return null;//mBinder;
     }
     @Override
@@ -242,7 +280,7 @@ public class ConnectDaemonService extends Service {
         mcuDictionary.put("M4-00","立即关闭引擎");
         mcuDictionary.put("M4-01","立即关闭冷气");
         mcuDictionary.put("M5","立即启动");
-        mcuDictionary.put("M5","立即启动");
+        //mcuDictionary.put("M5","立即启动");
 
         mcuDictionary.put("S110", "暖气设定成功");
 

@@ -80,6 +80,23 @@ public class MySimpleFragment extends Fragment {
         //v.invalidate();
     }
 
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
+
+    protected void restoreInstanceState(Bundle savedInstanceState) {
+
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // retain this fragment
+        setRetainInstance(true);
+        if (savedInstanceState != null)
+            restoreInstanceState(savedInstanceState);
+    }
+
     public void saveData() //should be overwritten by child
     {
 

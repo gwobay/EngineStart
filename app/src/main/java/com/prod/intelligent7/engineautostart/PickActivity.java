@@ -27,7 +27,10 @@ public class PickActivity extends FragmentActivity
 
 	//static ProfilePage mFragment=null;
 
-	static boolean n_boot=true;
+	boolean n_boot=true;
+	public final static int PICK_1=1;
+	public final static int PICK_N=99;
+	int pick_type;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -39,13 +42,20 @@ public class PickActivity extends FragmentActivity
 					!intent.hasExtra(MainActivity.PICK4WHAT)) done();
 		fixLine=intent.getExtras().getString(MainActivity.PICK4WHAT);
 		if (fixLine.equalsIgnoreCase(MainActivity.N_BOOT_PARAMS)) {
-			setContentView(R.layout.activity_pick_n);
 			n_boot = true;
+			pick_type=PICK_N;
+			setContentView(R.layout.activity_pick_n);
 		}
 		else {
-			setContentView(R.layout.activity_pick_1);
 			n_boot=false;
+			pick_type=PICK_1;
+			setContentView(R.layout.activity_pick_1);
 		}
+	}
+
+	public int getPickType()
+	{
+		return pick_type;
 	}
 	static Menu mActionMenu=null;
 
@@ -145,7 +155,10 @@ public class PickActivity extends FragmentActivity
 		EditText activeP=(EditText)rootV.findViewById(R.id.active_period);
 		if (activeP!= null) nBootParam += activeP.getText().toString()+"-";
 		EditText idleP=(EditText)rootV.findViewById(R.id.idle_period);
-		if (idleP!= null) nBootParam += idleP.getText().toString();
+		int iPause=Integer.parseInt(idleP.getText().toString());
+		if (iPause < 1) iPause=1;
+		if (iPause > 5) iPause=5;
+		if (idleP!= null) nBootParam += (new DecimalFormat("000")).format(iPause);
 		pStart=(TimePicker)rootV.findViewById(R.id.n_boot_time_end);
 		int eHr=pStart.getCurrentHour();
 		int eMin=pStart.getCurrentMinute();
@@ -165,7 +178,7 @@ public class PickActivity extends FragmentActivity
 		View rootV=v.getRootView();
 		DatePicker pStartD=(DatePicker)rootV.findViewById(R.id.one_boot_date);
 		int iYY=pStartD.getYear();
-		int iMM=pStartD.getMonth();
+		int iMM=pStartD.getMonth()+1;
 		int iDD=pStartD.getDayOfMonth();
 		TimePicker pStart=(TimePicker)rootV.findViewById(R.id.one_boot_time);
 		int iHH=pStart.getCurrentHour();

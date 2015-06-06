@@ -91,18 +91,48 @@
     <string name="n_boot_start_time">选择多次启动开始时刻</string>
     <string name="n_boot_active_period">输入每次启动持续时程</string>
     <string name="n_boot_idle_period">输入每次中断休息间距</string>
+    <string name="n_boot_on_period">每次启动持续时程</string>
+    <string name="n_boot_off_period">每次中断休息间距</string>
     <string name="n_boot_end_time">选择多次启动终止时刻</string>
 
+    <string name="label_one_boot_set_date">下次启动日期</string>
+    <string name="label_one_boot_set_time">下次启动时刻</string>
+    <string name="one_boot_set_date">按此预设下次启动日期</string>
+    <string name="one_boot_set_time">按此预设下次启动时刻</string>
     <string name="one_boot_start_date">选择一次启动开始日期</string>
     <string name="one_boot_start_time">选择一次启动开始时刻</string>
     <string name="one_boot_active_period">输入启动持续时程</string>
-
-    <string name="minute">分钟</string>
+    <string name="week">星期</string>
+    <string name="year">年</string>
+    <string name="month">月</string>
+    <string name="day">日</string>
+    <string name="minute">分</string>
+    <string name="hour">时</string>
+    <string name="minute_long">分钟</string>
+    <string name="hour_long">小时</string>
     <!-- dictionary 雕刻发性重复时间中断距离 雕刻发性重复时间 时间路程打断 每次 分钟//-->
     <string name="press_start_engine">按下此启动引擎</string>
 
     <string name="press_stop_engine">按下此停止引擎</string>
-
+    <string-array name="pick_year">
+        <item>15</item>
+        <item>16</item>
+        <item>17</item>
+        <item>18</item>
+        <item>19</item>
+        <item>20</item>
+        <item>21</item>
+        <item>22</item>
+    </string-array>
+    <string-array name="week_day">
+        <item>日</item>
+        <item>一</item>
+        <item>二</item>
+        <item>三</item>
+        <item>四</item>
+        <item>五</item>
+        <item>六</item>
+    </string-array>
     <!-- end engine / boot 1 or N              /-->
 
     <string name="abc_action_bar_home_description">转到主屏幕</string>

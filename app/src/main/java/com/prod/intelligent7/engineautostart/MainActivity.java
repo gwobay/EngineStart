@@ -30,13 +30,17 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.CalendarView;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
 import java.text.DecimalFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 
 public class MainActivity extends AppCompatActivity
@@ -318,7 +322,7 @@ public class MainActivity extends AppCompatActivity
         Toast.makeText(this, ConnectDaemonService.getChinese("M3")+"指令已送出", Toast.LENGTH_LONG).show();
     }
 
-    MySimpleFragment mCurrentFragment;
+    static MySimpleFragment mCurrentFragment=null;
     void setPhones()
     {
         if (getSavedValue(SET_SIM).charAt(0)=='-')
@@ -379,14 +383,98 @@ public class MainActivity extends AppCompatActivity
         setTitle(pageTitle);
     }
 
+    public void saveOneBootData(View v)
+    {
+        ((ReadOneBootFragment)mCurrentFragment).saveData();
+        /* need to set up on service to send command based on the saved parameter
+        year/month/day-hour:min-last4
+
+        String pin=getSavedValue(ONE_BOOT_PARAMS);
+        String p1=getSavedValue(SET_PHONE1);
+        String p2=getSavedValue(SET_PHONE2);
+        if (p1.charAt(0)=='-')
+        {
+            closeFragment(v);
+            return;
+        }
+        String command="M3-"+pin+"-"+p1+"-";
+        if (p2.charAt(0)!='-') command += p2;
+        sendCommandAndDone(command);
+         */
+        if (((ReadOneBootFragment)mCurrentFragment).checkIfSaveConfirmed())
+        Toast.makeText(this, "定时启动指令已設定", Toast.LENGTH_LONG).show();
+
+    }
+
+    public void pickTime(View v) {
+        DialogFragment newFragment = new PickTimeFragment();
+        ((PickTimeFragment)newFragment).setViewToFill((TextView) v);
+        newFragment.show(getSupportFragmentManager(), "timePicker");
+    }
+    View responseView;
+    public void pickDate(View v) {
+        //DialogFragment newFragment = new PickDateFragment();
+        //((PickDateFragment)newFragment).setViewToFill((TextView) v);
+        DialogFragment newFragment = new PickCalendarFragment();
+       ((PickCalendarFragment)newFragment).setViewToFill((TextView) v);
+        //UseCalendarFragment newFragment=new UseCalendarFragment();
+
+        //FragmentManager fragmentManager = getSupportFragmentManager();
+        //mainUI = fragmentManager.findFragmentById(R.id.main_content_fragment);
+        //FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+       // fragmentTransaction.addToBackStack(null);//"MAIN_UI");
+        //fragmentTransaction.replace(R.id.container, newFragment, "ONE_BOOT").commit();
+        //((UseCalendarFragment)newFragment).setViewToFill((TextView) v);
+       // mUseCalendarFragment=newFragment;
+        newFragment.show(getSupportFragmentManager(), "calendarPicker");
+        responseView=v;
+    }
+    UseCalendarFragment mUseCalendarFragment;
+    public void setCalendarDate(View v){
+        View rootV=v.getRootView();
+        CalendarView cV= (CalendarView) rootV.findViewById(R.id.calendarView);
+        long getTime=cV.getDate();
+        //TimeZone.setDefault(TimeZone.getTimeZone("Hongkong"));
+        GregorianCalendar gToday=new GregorianCalendar(TimeZone.getTimeZone("Hongkong"));
+        gToday.setTimeInMillis(getTime);
+        ((TextView) responseView).setText(new DecimalFormat("00").format(gToday.get(Calendar.YEAR)) + "/" +
+                (new DecimalFormat("00")).format(gToday.get(Calendar.MONTH)) + "/" +
+                (new DecimalFormat("00")).format(gToday.get(Calendar.DAY_OF_MONTH)));
+        mUseCalendarFragment.backToMain();
+    }
+
+    public void noAction(View v){
+        mUseCalendarFragment.backToMain();
+    }
+
     void setOneBoot()
     {
         confirmSimAndPhone();
+
+        ReadOneBootFragment oneBootFragment=new ReadOneBootFragment();
+        Bundle aBundle=new Bundle();
+        aBundle.putString("PREFERENCE_FILE_NAME", getApplication().getPackageName()+".profile");
+        oneBootFragment.setArguments(aBundle);
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        mainUI = fragmentManager.findFragmentById(R.id.main_content_fragment);
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.addToBackStack(null);//"MAIN_UI");
+        fragmentTransaction.replace(R.id.container, oneBootFragment, "MAIN_UI").commit();
+        mCurrentFragment=oneBootFragment;
+
+        pageTitle=getResources().getString(R.string.daily_auto_start_setting);
+
+
+        setTitle(pageTitle);
+
         //PICK4WHAT=ONE_BOOT_PARAMS;
+        /*
         Intent pIntent=new Intent(this, PickActivity.class);
         pIntent.putExtra(PICK4WHAT, ONE_BOOT_PARAMS);
         startActivityForResult(pIntent, PICK_ONE);
         //Toast.makeText(this, "PENDING construction of " + mCommand, Toast.LENGTH_LONG).show();
+        */
     }
 
     public static final String N_BOOT_PARAMS="NBOOT_PARAM";
@@ -409,10 +497,10 @@ public class MainActivity extends AppCompatActivity
     public void startEngine(View v)
     {
         String command="M5-";
-        String howLong=((EditText)(v.getRootView().findViewById(R.id.last4))).getText().toString();
+        String howLong=((EditText)(v.getRootView().findViewById(R.id.last4_now))).getText().toString();
         int i4=Integer.parseInt(howLong);
         i4=(i4>30)?30:i4;
-        command += new DecimalFormat("0#").format(i4);
+        command += (new DecimalFormat("00")).format(i4);
         sendCommandAndDone(command);
         Toast.makeText(this, ConnectDaemonService.getChinese("M5")+"指令已送出", Toast.LENGTH_LONG).show();
     }

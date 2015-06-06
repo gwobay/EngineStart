@@ -68,7 +68,7 @@ public class DatePickerFragment extends DialogFragment
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 							 Bundle savedInstanceState) {
 		View retV=null;
-		if (PickActivity.n_boot)
+		if (((PickActivity)getActivity()).getPickType()==PickActivity.PICK_N)
 		retV = inflater.inflate(R.layout.layout_n_boots, container, false);
 		else
 		retV = inflater.inflate(R.layout.layout_1_boot, container, false);

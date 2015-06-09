@@ -328,10 +328,16 @@ public class TcpConnectDaemon extends Thread
 		}
 		if (readData==null || readData.length < 1) return;
 		
-		String sData=new String(readData);
+		final String sData=new String(readData);
+		final Context daemonS=mContext;
 		log.info("got : "+sData);
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				((ConnectDaemonService)daemonS).sendNotification(sData);
+			}
+		}).start();
 
-		((ConnectDaemonService)mContext).sendNotification(sData);
 		//data from server should always msg@time-stamp<sender>$
 		//put in log(database) and create notification
 		//format "msg"+"<sender, backup-sender@receiver>$" i.e., "...<phone1, phone2@receiver>" from phone 
@@ -368,7 +374,7 @@ public class TcpConnectDaemon extends Thread
 			return;
 		}
 		
-		saveDataToDb(msg, sender, myName, "I");
+		saveMyDataToDb(msg, sender, myName, "I");
 
 		idx=msg.indexOf('@');
 		if (idx < 0) {
@@ -377,7 +383,7 @@ public class TcpConnectDaemon extends Thread
 		}
 		else {
 			String senderTime=msg.substring(idx+1);
-			log.warning(sData + "delayed by " + (new Date().getTime() - Integer.parseInt(senderTime)));
+			log.warning(sData + "delayed by " + (new Date().getTime() - Long.parseLong(senderTime)));
 			return;
 		}
 		
@@ -462,7 +468,7 @@ public class TcpConnectDaemon extends Thread
 				if (!socketSendData(msg+"$")) break;
 
 				if (socketData.charAt(0) != '<')
-				saveDataToDb(socketData);
+				saveMyDataToDb(socketData);
 				try {
 					Thread.sleep(500);
 				} catch (InterruptedException e) {
@@ -525,15 +531,15 @@ public class TcpConnectDaemon extends Thread
 		imDone=false;
 		//imChatLine=false;
 		do {
-			if (wait30)
-			{
-				try {
-					sleep(30*000);
-				} catch(InterruptedException e){
+				if (wait30)
+				{
+					try {
+						sleep(30*000);
+					} catch(InterruptedException e){
 
+					}
 				}
-			}
-			boolean iCanStart=false;
+				boolean iCanStart=false;
 			//if (myName.charAt(0) != '-' &&
 				//mySimIccId .charAt(0) != '-')
 			//iCanStart=true;
@@ -572,6 +578,7 @@ public class TcpConnectDaemon extends Thread
 			if (mySocket==null) return;
 			log.info("daemon connected at " +
 					DateFormat.getTimeInstance().format(new Date()));
+			stopFlag=false;
 			startWriteThread();
 			while (mySocket.isSktConnected() && mySocket.hasInStream()) {
 				if (stopFlag) break;
@@ -608,6 +615,7 @@ public class TcpConnectDaemon extends Thread
 			}
 
 		} while (!imDone);
+		((ConnectDaemonService)mContext).sendNotification("Daemon finishes "+iSuccessful+" jobs and gone");
 	}
 	/* databse staff starts here
 	*
@@ -698,7 +706,7 @@ public class TcpConnectDaemon extends Thread
 		//{Toast.makeText(mActivity, eMsg, Toast.LENGTH_SHORT).show();}
 	}
 
-	void saveDataToDb(String data, String sender, String receiver, String io){
+	void saveMyDataToDb(String data, String sender, String receiver, String io){
 		confirmTableExist("event_records");
 		String sql="insert into event_records ";
 		long when=new Date().getTime();
@@ -717,9 +725,9 @@ public class TcpConnectDaemon extends Thread
 		}
 	}
 
-	void saveDataToDb(String data)
+	void saveMyDataToDb(String data)
 	{
-		saveDataToDb(data,myName, mySimIccId, "O");
+		saveMyDataToDb(data,myName, mySimIccId, "O");
 	}
 	String fromSpecifedFieldsToSqlCriteria(HashMap<String, String> specifiedFields)
 	{

@@ -3,6 +3,7 @@ package com.prod.intelligent7.engineautostart;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -665,9 +666,18 @@ public class ReadPinFragment extends MySimpleFragment {
 		((MainActivity)mActivity).setPreferenceValue(pwd, newPin);
 		((MainActivity)mActivity).setPreferenceValue(old1, oldPin);
 
-		((MainActivity)mActivity).updatePinCommand();
+		if (!oldPin.equalsIgnoreCase(newPin))
+		{
+			String command="M2-"+oldPin+"-"+newPin+"-"+newPin;
+			Intent jIntent=new Intent(getActivity(), ConnectDaemonService.class);
+			//M1-00 (cool) or M1-01 (warm)
+			jIntent.putExtra(ConnectDaemonService.DAEMON_COMMAND, command);
+			//Toast.makeText(this, "will send start command to server", Toast.LENGTH_LONG).show();
+			getActivity().startService(jIntent);
+		}
+		//((MainActivity)mActivity).updatePinCommand();
 
-        backToMain();
+		backToMain();
 	}
 
 	 @Override

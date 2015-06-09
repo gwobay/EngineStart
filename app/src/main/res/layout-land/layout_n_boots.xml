@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="match_parent"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:background="#ffffffff">
 
     <LinearLayout
         android:orientation="vertical"
@@ -180,7 +181,7 @@
             android:layout_width="51dp"
             android:layout_height="wrap_content"
             android:text="@string/cancel"
-            android:id="@+id/neglect_phone_entry"
+            android:id="@+id/no_change"
             android:gravity="center"
             android:textColor="#ff25c0ff"
             android:background="#fff4ff17"
@@ -188,7 +189,7 @@
             android:capitalize="none"
             android:clickable="true"
             android:textSize="30dp"
-            android:onClick="doneActivity"
+            android:onClick="closeFragment"
             android:padding="5dp"
             android:layout_weight="0.16" />
 

@@ -3,7 +3,8 @@
     android:layout_width="match_parent"
     android:id="@+id/layout_nboot"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="#ffffffff">
 
     <LinearLayout
         android:orientation="horizontal"
@@ -55,10 +56,11 @@
             android:textColor="#ffff5e3e"
             android:ems="30"
             android:id="@+id/active_period"
-            android:gravity="left"
-            android:layout_gravity="left"
+            android:gravity="center_horizontal"
+            android:layout_gravity="center_horizontal"
             android:background="#fff6ff22"
-            android:textSize="30dp" />
+            android:textSize="30dp"
+            android:text="15"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -100,10 +102,11 @@
             android:textColor="#ffff5e3e"
             android:ems="30"
             android:id="@+id/idle_period"
-            android:gravity="left"
+            android:gravity="center_horizontal"
             android:layout_gravity="left"
             android:background="#fff6ff22"
-            android:textSize="30dp" />
+            android:textSize="30dp"
+            android:text="1" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -181,7 +184,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/cancel"
-            android:id="@+id/neglect_phone_entry"
+            android:id="@+id/do_nothing"
             android:gravity="center"
             android:layout_weight="0.5"
             android:textColor="#ff25c0ff"
@@ -190,7 +193,7 @@
             android:capitalize="words"
             android:clickable="true"
             android:textSize="30dp"
-            android:onClick="doneActivity"
+            android:onClick="closeFragment"
             android:padding="5dp" />
 
     </LinearLayout>

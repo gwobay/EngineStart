@@ -1,40 +1,31 @@
 package com.prod.intelligent7.engineautostart;
 
 
-import android.app.Activity;
-import android.app.Dialog;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.graphics.Color;
-import android.graphics.Typeface;
 import android.os.Handler;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.view.ActionProvider;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import android.util.AttributeSet;
 import android.view.Gravity;
-import android.view.InflateException;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
-import android.widget.Button;
+import android.view.ViewGroup;
 import android.widget.CalendarView;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Toolbar;
 
 import java.text.DecimalFormat;
 import java.util.Calendar;
@@ -63,6 +54,11 @@ public class MainActivity extends AppCompatActivity
         }
         else
             imNewUser=false;
+        Intent jIntent=new Intent(this, ConnectDaemonService.class);
+        //M1-00 (cool) or M1-01 (warm)
+        jIntent.putExtra(ConnectDaemonService.DAEMON_COMMAND, " ");
+        //Toast.makeText(this, "will send start command to server", Toast.LENGTH_LONG).show();
+        startService(jIntent); //just to make sure daemon is up and running
 
     }
 
@@ -129,28 +125,90 @@ public class MainActivity extends AppCompatActivity
         //openOptionsMenu();// mMenu.findItem(R.id.action_get_recent1).setVisible(true);
     }
 
+    void showLogData(int command){
+        ShowLogData logFragment=new ShowLogData();
+        logFragment.setCommand(command);
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        mainUI = fragmentManager.findFragmentById(R.id.main_content_fragment);
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.addToBackStack(null);//"MAIN_UI");
+        fragmentTransaction.replace(R.id.container, logFragment, "MAIN_UI").commit();
+        mCurrentFragment=logFragment;
+
+        pageTitle=getResources().getString(R.string.check_log);
+
+
+        setTitle(pageTitle);
+
+    }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog alert;
         switch (id)
         {
             case R.id.action_get_sim:
+                alert = builder.setMessage(getResources().getString(R.string.sim)+":"+getSavedValue(SET_SIM))
+                        .setCancelable(false)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                //do things
+                            }
+                        }).create();
+                alert.show();
                 break;
             case R.id.action_get_pin:
+
+                alert = builder.setMessage(getResources().getString(R.string.pin)+":"+getSavedValue(SET_PIN))
+                        .setCancelable(false)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                //do things
+                            }
+                        }).create();
+                alert.show();
                 break;
             case R.id.action_get_phones:
+                alert = builder.setMessage(getResources().getString(R.string.phone2)+":"+getSavedValue(SET_PHONE2))
+                        .setCancelable(false)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                //do things
+                            }
+                        }).create();
+                alert.show();
                 break;
             case R.id.action_get_recent1:
+                showLogData(ShowLogData.SHOW_NEWEST);
                 break;
             case R.id.action_get_recent10:
+                showLogData( ShowLogData.SHOW_LAST10);
                 break;
             case R.id.action_get_last_failed:
+                showLogData(ShowLogData.SHOW_FAILED1);
                 break;
             case R.id.action_clean_log:
+                final Context ctx=this;
+                alert = builder.setMessage(getResources().getString(R.string.confirm_to_clear_log))
+                        .setCancelable(false)
+                        .setPositiveButton(getResources().getString(R.string.confirm), new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                ShowLogData popF = new ShowLogData();
+                                popF.clearLog(ctx);
+                            }
+                        })
+                        .setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                //ShowLogData popF = new ShowLogData();
+                                //popF.clearLog(ctx);
+                            }
+                        }).create();
+                alert.show();
                 default:
 
                 break;
@@ -266,19 +324,18 @@ public class MainActivity extends AppCompatActivity
         jIntent.putExtra(ConnectDaemonService.DAEMON_COMMAND, command);
         //Toast.makeText(this, "will send start command to server", Toast.LENGTH_LONG).show();
         startService(jIntent);
-        mCurrentFragment.backToMain();
+        //mCurrentFragment.backToMain();
     }
     public void updatePinCommand()
     {
+        ((ReadPinFragment)mCurrentFragment).saveData();
         String pin=getSavedValue(SET_PIN);
         String oldPin=getSavedValue(OLD_PIN);
-        //String p2=getSavedValue(SET_PHONE2);
-        //if (pin.charAt(0)=='-' || )
+        if (pin.charAt(0)=='-' || pin.equalsIgnoreCase(oldPin))
         {
-           // return;
+            return;
         }
         String command="M2-"+oldPin+"-"+pin+"-"+pin;
-
         sendCommandAndDone(command);
         Toast.makeText(this, ConnectDaemonService.getChinese("M2")+"指令已送出", Toast.LENGTH_LONG).show();
     }
@@ -297,6 +354,7 @@ public class MainActivity extends AppCompatActivity
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.addToBackStack(null);//"MAIN_UI");
         fragmentTransaction.replace(R.id.container, pinFragment, "MAIN_UI").commit();
+        mCurrentFragment=pinFragment;
         if (getSavedValue(SET_PIN).charAt(0)=='-')
             pageTitle=getResources().getString(R.string.pin_setting);
         else
@@ -310,12 +368,12 @@ public class MainActivity extends AppCompatActivity
         ((ReadPhoneFragment)mCurrentFragment).saveData();
         String pin=getSavedValue(SET_PIN);
         String p1=getSavedValue(SET_PHONE1);
-        String p2=getSavedValue(SET_PHONE2);
         if (p1.charAt(0)=='-')
         {
-            closeFragment(v);
+            //closeFragment(v);
             return;
         }
+        String p2=getSavedValue(SET_PHONE2);
         String command="M3-"+pin+"-"+p1+"-";
         if (p2.charAt(0)!='-') command += p2;
         sendCommandAndDone(command);
@@ -385,7 +443,7 @@ public class MainActivity extends AppCompatActivity
 
     public void saveOneBootData(View v)
     {
-        ((ReadOneBootFragment)mCurrentFragment).saveData();
+        ((SetOneBootFragment)mCurrentFragment).saveData();
         /* need to set up on service to send command based on the saved parameter
         year/month/day-hour:min-last4
 
@@ -401,9 +459,10 @@ public class MainActivity extends AppCompatActivity
         if (p2.charAt(0)!='-') command += p2;
         sendCommandAndDone(command);
          */
-        if (((ReadOneBootFragment)mCurrentFragment).checkIfSaveConfirmed())
-        Toast.makeText(this, "定时启动指令已設定", Toast.LENGTH_LONG).show();
-
+        if (((SetOneBootFragment)mCurrentFragment).checkIfSaveConfirmed()) {
+            Toast.makeText(this, "定时启动指令已設定", Toast.LENGTH_LONG).show();
+            sendCommandAndDone("NEW SCHEDULE");
+        }
     }
 
     public void pickTime(View v) {
@@ -451,7 +510,7 @@ public class MainActivity extends AppCompatActivity
     {
         confirmSimAndPhone();
 
-        ReadOneBootFragment oneBootFragment=new ReadOneBootFragment();
+        SetOneBootFragment oneBootFragment=new SetOneBootFragment();
         Bundle aBundle=new Bundle();
         aBundle.putString("PREFERENCE_FILE_NAME", getApplication().getPackageName()+".profile");
         oneBootFragment.setArguments(aBundle);
@@ -481,10 +540,36 @@ public class MainActivity extends AppCompatActivity
     public static final String ONE_BOOT_PARAMS="1NBOOT_PARAM";
 
     public static String PICK4WHAT="WHICH_PARAM";
-
+    public void saveNBootData(View v)
+    {
+        ((SetOnOffBootFragment)mCurrentFragment).saveData();
+        if (((SetOnOffBootFragment)mCurrentFragment).checkIfSaveConfirmed()) {
+            Toast.makeText(this, "多次启动指令已設定", Toast.LENGTH_LONG).show();
+            sendCommandAndDone("NEW SCHEDULE");
+        }
+    }
     void setMultipleBoot()
     {
         confirmSimAndPhone();
+
+        SetOnOffBootFragment onOffBootFragment=new SetOnOffBootFragment();
+        Bundle aBundle=new Bundle();
+        aBundle.putString("PREFERENCE_FILE_NAME", getApplication().getPackageName()+".profile");
+        onOffBootFragment.setArguments(aBundle);
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        mainUI = fragmentManager.findFragmentById(R.id.main_content_fragment);
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.addToBackStack(null);//"MAIN_UI");
+        fragmentTransaction.replace(R.id.container, onOffBootFragment, "MAIN_UI").commit();
+        mCurrentFragment=onOffBootFragment;
+
+        pageTitle=getResources().getString(R.string.daily_multiple_start_setting);
+
+
+        setTitle(pageTitle);
+
+        /*
         //PICK4WHAT=N_BOOT_PARAMS;
         Intent pIntent=new Intent(this, PickActivity.class);
         pIntent.putExtra(PICK4WHAT, N_BOOT_PARAMS);
@@ -492,6 +577,7 @@ public class MainActivity extends AppCompatActivity
         //pIntent.putExtra(mFixKey, fixMsg);
         startActivityForResult(pIntent, PICK_N);
         //Toast.makeText(this, "PENDING construction of "+mCommand, Toast.LENGTH_LONG).show();
+        */
     }
 
     public void startEngine(View v)

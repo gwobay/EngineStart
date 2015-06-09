@@ -25,10 +25,10 @@ import java.text.DecimalFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-public class ReadOneBootFragment extends MySimpleFragment {
+public class SetOneBootFragment extends MySimpleFragment {
 	public static final String BKP_PASSWORD="BKP_PASSWORD";
 
-	public ReadOneBootFragment() {
+	public SetOneBootFragment() {
 		// TODO Auto-generated constructor stub
 	}
 
@@ -638,7 +638,7 @@ public class ReadOneBootFragment extends MySimpleFragment {
 		if (sDate != null && sDate.length() > 9 &&
 				sTime != null && sTime.length() > 4 &&
 				sLast4 != null && sLast4.length() > 0) {
-			String bootParam = sDate + ":" + sTime + "-" + sLast4;
+			String bootParam = sDate + "-" + sTime + "-" + sLast4;
 
 			((MainActivity) mActivity).setPreferenceValue(MainActivity.ONE_BOOT_PARAMS, bootParam);
 			saveConfirmed=true;

@@ -98,6 +98,8 @@ public class DbProcessor extends SQLiteOpenHelper {
 	
 	public static void closeDbByCursor(Cursor csr)
 	{
+		if (dbToClose == null) return;
+		if (csr == null) return;
 		SQLiteDatabase db=dbToClose.get((""+csr.hashCode()));
 		if (db!=null) db.close();
 		csr.close();
@@ -148,16 +150,27 @@ public class DbProcessor extends SQLiteOpenHelper {
 		aDb.close();
 	}
 	
-	public static void emptyTable(Context cx, String sSql)throws SQLiteException
+	public static void emptyTable(Context cx, String table)throws SQLiteException
 	{
 		SQLiteDatabase aDb=getInstance(cx);
 		if (aDb==null) return;
-		SQLiteStatement stm=aDb.compileStatement(sSql);
+		SQLiteStatement stm=aDb.compileStatement("Delete from "+table+";");
 		stm.execute();
 		stm.close();
 		aDb.close();
 	}
-	
+
+	public static void deleteSelectedRecords(Context cx, String table, String criteria)throws SQLiteException
+	{
+		SQLiteDatabase aDb=getInstance(cx);
+		if (aDb==null) return;
+		SQLiteStatement stm=aDb.compileStatement("Delete from "+table+" where "+criteria+";");
+		stm.execute();
+		stm.close();
+		aDb.close();
+	}
+
+
 	public static int insertTable(Context cx, String table, String nullColumnHack, ContentValues values )
 			throws SQLiteException
 	{

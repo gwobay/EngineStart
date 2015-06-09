@@ -14,10 +14,10 @@
     <uses-permission android:name="com.google.android.apps.photos.permission.GOOGLE_PHOTOS"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <permission
-        android:name="com.example.volunteerhandbook.permission.C2D_MESSAGE"
+        android:name="com.prod.intelligent7.engineautostart.permission.C2D_MESSAGE"
         android:protectionLevel="signature" />
 
-    <uses-permission android:name="com.example.volunteerhandbook.permission.C2D_MESSAGE" />
+    <uses-permission android:name="com.prod.intelligent7.engineautostart.permission.C2D_MESSAGE" />
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="18" />

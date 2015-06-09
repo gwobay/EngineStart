@@ -16,9 +16,13 @@
 
 package com.prod.intelligent7.engineautostart;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.Vector;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.locks.ReentrantLock;
@@ -111,6 +115,8 @@ public class ConnectDaemonService extends Service {
 
     static TcpConnectDaemon mDaemon=null;
     ArrayBlockingQueue<String> outBoundMailBox;
+    Thread hourlyAlarm;
+    boolean stopHourAlarm;
     @Override
     public void onCreate() {
         log=Logger.getAnonymousLogger();
@@ -118,6 +124,24 @@ public class ConnectDaemonService extends Service {
         if (mDaemon==null ||
                 !mDaemon.isAlive())
         startDaemon();
+        startScheduledJobs();
+        stopHourAlarm=false;
+        hourlyAlarm=new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                while(!stopHourAlarm){
+
+                        try {
+                            Thread.sleep(60 * 60 * 1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    startScheduledJobs();
+                }
+            }
+        });
+        hourlyAlarm.start();
     }
     public static final String SERVER_IP="server_ip";
     public static final String SERVER_PORT="server_port";
@@ -159,7 +183,8 @@ public class ConnectDaemonService extends Service {
         }
         mDaemon.attachToService(this);
         mDaemon.start();
-
+        // need start schedule too; MainActivity.N_BOOT_PARAMS, nBootParam); //HH:MM-on minutes-off minutes-cycle last for minutes
+        // MainActivity.ONE_BOOT_PARAMS, bootParam); //  yy/mm/dd:hh:mm-last for minutes
     }
 
     void confirmDaemonAlive()
@@ -183,8 +208,16 @@ public class ConnectDaemonService extends Service {
         confirmDaemonAlive();
         if (command != null)
         {
+            if (command.charAt(0)=='M') {
+                //need to check if new schedule is set and interrupt the schedule thread to reschedule
                 mDaemon.putOutBoundMsg(command);
-            mDaemon.wakeUp4Command();
+                mDaemon.wakeUp4Command();
+            }
+            if (command.indexOf("SCHEDULE")<0) return null;
+            {
+                stopScheduledJobs();
+                startScheduledJobs();
+            }
         }
         return null;//mBinder;
     }
@@ -338,6 +371,11 @@ public class ConnectDaemonService extends Service {
         if (i0>0) msgShow=msg.substring(0, i0);
         else if (idx>0) msgShow=msg.substring(0, idx);
         String chinese=getChinese(msgShow);
+        if (chinese==null)chinese="DAEMON STATUS";
+        if (msg.toLowerCase().indexOf("finish") > 0)
+        {
+            startDaemon();
+        }
 
         Intent jobIntent=null;//=new Intent(this, MainActivity.class);
 
@@ -358,8 +396,8 @@ public class ConnectDaemonService extends Service {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
         //.setLargeIcon(Bitmap.createBitmap(metrics,80, 80, Bitmap.Config.ARGB_4444))//
-        //.setSmallIcon(R.drawable.save_icon)//kp37)//ic_stat_gcm)
-        .setContentTitle(header+"("+iPending+")")
+        .setSmallIcon(R.drawable.engine_auto_start)
+        .setContentTitle(header + "(" + iPending + ")")
         .setStyle(new NotificationCompat.BigTextStyle().bigText(msgShow))
         .setContentText(chinese)
         .setLights(0xFF0000, 2000, 5000)
@@ -387,4 +425,225 @@ public class ConnectDaemonService extends Service {
     {
     	sendNotification(msg);
     }
-}
+
+    boolean killScheduledJob;
+    OneTimeScheduler oneBootJob;
+
+    ContinueScheduler onOffJob;
+
+    public void startScheduledJobs()
+    {
+        killScheduledJob=false;
+        if (oneBootJob== null || !oneBootJob.isAlive()){
+        oneBootJob=new OneTimeScheduler(this, mDaemon);
+        oneBootJob.start();
+        }
+        if (onOffJob == null || !onOffJob.isAlive()){
+            onOffJob=new ContinueScheduler(this, mDaemon);
+        onOffJob.start();
+        }
+    }
+    public void stopScheduledJobs()
+    {
+        killScheduledJob=true;
+        if (oneBootJob!= null && oneBootJob.isAlive())
+            oneBootJob.killJob();
+        if (onOffJob!= null && onOffJob.isAlive())
+            onOffJob.killJob();
+    }
+    public void resetScheduledJobs()
+    {
+        if (oneBootJob!= null && oneBootJob.isAlive())
+            oneBootJob.killJob();
+        if (onOffJob!= null && onOffJob.isAlive())
+            onOffJob.killJob();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                    try {
+                        //Thread.sleep(10000L);
+                        onOffJob.join();
+                        oneBootJob.join();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                startScheduledJobs();
+            }
+        }).start();
+    }
+    }
+
+    class OneTimeScheduler extends JobScheduler {
+        // MainActivity.ONE_BOOT_PARAMS, bootParam); //  yyyy/mm/dd-hh:mm-last for minutes
+        public OneTimeScheduler(ConnectDaemonService cs, TcpConnectDaemon dm){
+            super(cs, dm);
+        }
+        @Override
+        protected void readParameter()
+        {
+            SharedPreferences sharedPref = mContext.getSharedPreferences(MainActivity.package_name + ".profile", Context.MODE_PRIVATE);
+            String param=sharedPref.getString(MainActivity.ONE_BOOT_PARAMS,"--");
+            if (param.charAt(0) != '-'){
+                String[] terms=param.split("-");
+                if (terms.length == 3){
+                    int year=Integer.parseInt(terms[0].substring(0, 4));
+                    int month=Integer.parseInt(terms[0].substring(5, 7));
+                    int day=Integer.parseInt(terms[0].substring(8, 10));
+                    GregorianCalendar gToday=new GregorianCalendar(TimeZone.getTimeZone(mContext.getResources().getString(R.string.my_time_zone_en)));
+                    if (gToday.get(Calendar.YEAR) != year ||
+                            gToday.get(Calendar.MONTH) != month ||
+                            gToday.get(Calendar.DAY_OF_MONTH) != day) {
+                        last4=-1;
+                        return;
+                    }
+                    int iH=Integer.parseInt(terms[1].substring(0,2));
+                    int iM=Integer.parseInt(terms[1].substring(3,5));
+                    int iHr=gToday.get(Calendar.HOUR_OF_DAY);
+                    int iMin=gToday.get(Calendar.MINUTE);
+                    init_wait=((iH-iHr)*60+(iM-iMin))*60*1000;//in milli secs
+                    last4=60*1000*Integer.parseInt(terms[2]); //in milli secs
+                    //last4=init_wait+end_time;
+                }
+            }
+        }
+        public void setResetStatus(boolean ya)
+        {
+            isWakenByReset=ya;
+        }
+
+        public void run()
+        {
+            boolean okStart=false;
+            boolean iWasReset=true;
+            try {
+
+                    readParameter();
+                    //iWasReset=false;
+                    if (on_time < 1) return;
+                    if (last4 < 0) return;
+                if (init_wait < -10*60*1000) return;
+                    if (init_wait>0){
+                    sleep(init_wait);
+                    }
+
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    if (!killScheduledJob)
+                    ((ConnectDaemonService)mContext).resetScheduledJobs();
+                    return;
+                }
+
+
+                sendStartCommand(on_time/60000);
+                try {
+                    sleep(last4);
+                } catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+
+                    sendStopCommand();
+                    if (!killScheduledJob)
+                    ((ConnectDaemonService)mContext).resetScheduledJobs();
+                    return;
+                }
+                //long next_time=start_time+on_time+off_time;
+                sendStopCommand();//in case it is still running
+        }
+    }
+
+    class ContinueScheduler extends JobScheduler {
+    // need start schedule too; MainActivity.N_BOOT_PARAMS, nBootParam); //HH:MM-on minutes-off minutes-cycle last for minutes
+
+        /*boolean isWakenByReset=false;
+        public void refresh(){
+
+        }
+        long start_time;
+        long on_time;
+        long off_time;
+        long end_time;
+        */
+        public ContinueScheduler(ConnectDaemonService cs, TcpConnectDaemon dm){
+            super(cs, dm);
+        }
+        @Override
+        protected void readParameter()
+        {
+            SharedPreferences sharedPref = mContext.getSharedPreferences(MainActivity.package_name + ".profile", Context.MODE_PRIVATE);
+            String param=sharedPref.getString(MainActivity.N_BOOT_PARAMS,"--");
+            if (param.charAt(0) != '-'){
+                String[] terms=param.split("-");
+                if (terms.length == 4){
+                   int iH=Integer.parseInt(terms[0].substring(0,2));
+                    int iM=Integer.parseInt(terms[0].substring(3,5));
+                    GregorianCalendar gToday=new GregorianCalendar(TimeZone.getTimeZone(mContext.getResources().getString(R.string.my_time_zone_en)));
+                    int iHr=gToday.get(Calendar.HOUR_OF_DAY);
+                    int iMin=gToday.get(Calendar.MINUTE);
+                    init_wait=((iH-iHr)*60+(iM-iMin))*60*1000; //in milli secs
+                    on_time=1000*60*Integer.parseInt(terms[1]); //in milli secs
+                    off_time=1000*3600*Integer.parseInt(terms[2]); //in milli secs
+                    end_time=1000*60*Integer.parseInt(terms[3]); //in milli secs
+                    last4=init_wait+end_time;
+                }
+            }
+        }
+        public void setResetStatus(boolean ya)
+        {
+            isWakenByReset=ya;
+        }
+
+        public void run()
+        {
+            boolean okStart=false;
+            boolean iWasReset=true;
+            try {
+                    readParameter();
+                    //iWasReset=false;
+                    if (last4 < 0) return;
+                    if (init_wait>0) {
+                    sleep(init_wait);
+                    iWasReset=false;
+                    last4 -= init_wait;
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                if (!killScheduledJob)
+                    ((ConnectDaemonService)mContext).resetScheduledJobs();
+                    return;
+                }
+
+            start_time=new Date().getTime();
+
+            end_time = start_time+last4;
+
+            while (start_time < end_time) {
+                /*pending*/
+                sendStartCommand(on_time/60000); //change to minute
+                try {
+                    sleep(on_time);
+                } catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+
+                    sendStopCommand();
+                    if (!killScheduledJob)
+                    ((ConnectDaemonService)mContext).resetScheduledJobs();
+                    return;
+                }
+                //long next_time=start_time+on_time+off_time;
+                sendStopCommand();//in case it is still running
+                try {
+                    sleep(off_time);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    if (!killScheduledJob)
+                    ((ConnectDaemonService)mContext).resetScheduledJobs();
+                    return;
+                }
+                start_time = new Date().getTime();
+            }
+        }
+    }
+

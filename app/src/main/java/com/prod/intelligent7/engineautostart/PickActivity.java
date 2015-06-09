@@ -155,10 +155,13 @@ public class PickActivity extends FragmentActivity
 		EditText activeP=(EditText)rootV.findViewById(R.id.active_period);
 		if (activeP!= null) nBootParam += activeP.getText().toString()+"-";
 		EditText idleP=(EditText)rootV.findViewById(R.id.idle_period);
-		int iPause=Integer.parseInt(idleP.getText().toString());
+		int iPause=1;
+		if (idleP!= null){
+			iPause=Integer.parseInt(idleP.getText().toString());
+		}
 		if (iPause < 1) iPause=1;
 		if (iPause > 5) iPause=5;
-		if (idleP!= null) nBootParam += (new DecimalFormat("000")).format(iPause);
+		nBootParam += (new DecimalFormat("000")).format(iPause);
 		pStart=(TimePicker)rootV.findViewById(R.id.n_boot_time_end);
 		int eHr=pStart.getCurrentHour();
 		int eMin=pStart.getCurrentMinute();
@@ -169,7 +172,8 @@ public class PickActivity extends FragmentActivity
 		String fileName=MainActivity.package_name+".profile";
 		SharedPreferences mem = getSharedPreferences(fileName, Context.MODE_PRIVATE);
 		SharedPreferences.Editor adder=mem.edit();
-		adder.putString(MainActivity.N_BOOT_PARAMS, nBootParam);
+		adder.putString(MainActivity.N_BOOT_PARAMS, nBootParam); //HH:MM-on minutes-off minutes-cycle last for minutes
+		adder.commit();
 		done();
 	}
 
@@ -183,14 +187,15 @@ public class PickActivity extends FragmentActivity
 		TimePicker pStart=(TimePicker)rootV.findViewById(R.id.one_boot_time);
 		int iHH=pStart.getCurrentHour();
 		int iM60=pStart.getCurrentMinute();
-		String bootParam=""+iYY+"/"+iMM+"/"+iDD+":"+iHH+":"+iM60+"-";
+		String bootParam=""+iYY+"/"+iMM+"/"+iDD+"-"+iHH+":"+iM60+"-";
 		EditText activeP=(EditText)rootV.findViewById(R.id.last4);
 		if (activeP!= null) bootParam += activeP.getText().toString();
 
 		String fileName=MainActivity.package_name+".profile";
 		SharedPreferences mem = getSharedPreferences(fileName, Context.MODE_PRIVATE);
 		SharedPreferences.Editor adder=mem.edit();
-		adder.putString(MainActivity.ONE_BOOT_PARAMS, bootParam);
+		adder.putString(MainActivity.ONE_BOOT_PARAMS, bootParam); //  yy/mm/dd:hh:mm-last for minutes
+		adder.commit();
 		done();
 	}
 

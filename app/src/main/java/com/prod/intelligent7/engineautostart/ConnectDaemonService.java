@@ -45,6 +45,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.os.Vibrator;
+import android.provider.Settings;
 import android.support.v4.app.NotificationCompat;
 import android.text.format.Time;
 import android.util.DisplayMetrics;
@@ -58,7 +59,9 @@ import android.view.WindowManager;
  * service is finished, it calls {@code completeWakefulIntent()} to release the
  * wake lock.
  */
-public class ConnectDaemonService extends Service {
+public class ConnectDaemonService extends Service
+        implements TcpConnectDaemon.StatusChangeListener
+{
     //public static final int NOTIFICATION_ID = 1;
     public static int NOTIFICATION_ID;
     public static final String DAEMON_COMMAND="COMMAND";
@@ -112,13 +115,14 @@ public class ConnectDaemonService extends Service {
         // Release the wake lock provided by the WakefulBroadcastReceiver.
         //EASBroadcastReceiver.completeWakefulIntent(intent);
    // }
-
+    public static String ramFileName=MainActivity.package_name+".profile";
     static TcpConnectDaemon mDaemon=null;
     ArrayBlockingQueue<String> outBoundMailBox;
     Thread hourlyAlarm;
     boolean stopHourAlarm;
     @Override
     public void onCreate() {
+        ramFileName=MainActivity.package_name+".profile";
         log=Logger.getAnonymousLogger();
         log.info(getPackageName()+" got activated ");
         if (mDaemon==null ||
@@ -170,7 +174,7 @@ public class ConnectDaemonService extends Service {
                 } catch(InterruptedException e){}
             }
         }
-        outBoundMailBox=mDaemon.getOutDataQ();
+        outBoundMailBox=mDaemon.getOutBoundDataQ();
         if (keep!=null && keep.size() > 0)
         {
             for (int i=0; i<keep.size(); i++){
@@ -182,11 +186,22 @@ public class ConnectDaemonService extends Service {
             keep=null;
         }
         mDaemon.attachToService(this);
+        mDaemon.addListener(this);
         mDaemon.start();
         // need start schedule too; MainActivity.N_BOOT_PARAMS, nBootParam); //HH:MM-on minutes-off minutes-cycle last for minutes
         // MainActivity.ONE_BOOT_PARAMS, bootParam); //  yy/mm/dd:hh:mm-last for minutes
     }
 
+    public void onDaemonDying(){
+        if (mDaemon!=null && mDaemon.isAlive()){
+            try {
+                mDaemon.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        startDaemon();
+    }
     void confirmDaemonAlive()
     {
         if (mDaemon!=null && mDaemon.isAlive()) return;
@@ -209,17 +224,51 @@ public class ConnectDaemonService extends Service {
         if (command != null)
         {
             if (command.charAt(0)=='M') {
+                putInDaemonOutboundQ(command);
                 //need to check if new schedule is set and interrupt the schedule thread to reschedule
-                mDaemon.putOutBoundMsg(command);
-                mDaemon.wakeUp4Command();
+                //mDaemon.putOutBoundMsg(command);
+                //mDaemon.wakeUp4Command();
+                //mDaemon.interrupt();
             }
             if (command.indexOf("SCHEDULE")<0) return null;
-            {
-                stopScheduledJobs();
-                startScheduledJobs();
-            }
+
+            stopScheduledJobs();
+            startScheduledJobs();
+
         }
         return null;//mBinder;
+    }
+
+    boolean confirmHasMailBox()
+    {
+        if (mDaemon==null) return false;
+        outBoundMailBox=mDaemon.getOutBoundDataQ();
+        return (outBoundMailBox!=null);
+    }
+
+    public void putInDaemonOutboundQ(String msg){
+        if (!confirmHasMailBox())
+            return;
+        final String outMsg=msg;
+        final TcpConnectDaemon toWakeUp=mDaemon;
+
+        new Thread(new Runnable(){
+            public void run()
+            {
+                if (outBoundMailBox.size() == TcpConnectDaemon.Q_SIZE){
+                    log.warning("Warning : too many msg in my Q");
+                    return;
+                }
+                try {
+                    outBoundMailBox.put(outMsg);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                toWakeUp.hasCommand=true;
+                toWakeUp.interrupt();
+            }
+        }).start();
     }
     @Override
     public boolean onUnbind(Intent intent) {
@@ -256,10 +305,43 @@ public class ConnectDaemonService extends Service {
     	return iPending;
     }
 
+    public static class MyTime{
+        int year;
+        int month;
+        int day;
+        int hour;
+        int minute;
+        public MyTime(GregorianCalendar gc)
+        {
+            year=gc.get(Calendar.YEAR);
+            month=gc.get(Calendar.MONTH)+1;
+            day=gc.get(Calendar.DAY_OF_MONTH);
+            hour=gc.get(Calendar.HOUR_OF_DAY);
+            minute=gc.get(Calendar.MINUTE);
+        }
+        public MyTime()
+        {
+            GregorianCalendar gc=new GregorianCalendar();
+            year=gc.get(Calendar.YEAR);
+            month=gc.get(Calendar.MONTH)+1;
+            day=gc.get(Calendar.DAY_OF_MONTH);
+            hour=gc.get(Calendar.HOUR_OF_DAY);
+            minute=gc.get(Calendar.MINUTE);
+        }
+    }
+    boolean car_theft;
     void makeNoise()
     {
-    	boolean toRing=false;
-    	//String fileName=MainActivity.getFileHeader()+ProfilePage.getTableName();
+    	if (car_theft)
+        {
+            noise = RingtoneManager.getRingtone(this, Settings.System.DEFAULT_RINGTONE_URI);
+            noise.play();
+            return;
+        }
+
+
+        boolean toRing=false;
+        //String fileName=MainActivity.getFileHeader()+ProfilePage.getTableName();
         String fileName=MainActivity.package_name+".profile";
         SharedPreferences mem = getSharedPreferences(fileName, Context.MODE_PRIVATE);
         String sRing=mem.getString(PickActivity.CURRENT_RINGTON, "--");//, String);
@@ -273,7 +355,7 @@ public class ConnectDaemonService extends Service {
         sT0=t1.split(":");
         int h1=Integer.parseInt(sT0[0]);
         int m1=Integer.parseInt(sT0[1]);
-        Time tm=new Time();
+        MyTime tm=new MyTime(new GregorianCalendar(TimeZone.getTimeZone(getResources().getString(R.string.my_time_zone_en))));
         int iNow=tm.hour*60+tm.minute;
         int iU=h1*60+m1;
     	int iL=h0*60+m0;
@@ -361,6 +443,9 @@ public class ConnectDaemonService extends Service {
         mNotificationManager = (NotificationManager)
                 this.getSystemService(Context.NOTIFICATION_SERVICE);
 
+        car_theft=false;
+        if (msg.indexOf("505")>0)
+            car_theft=true;
         makeNoise();
         String msgShow=msg;
         //msg :   msg in SXX@time<sender> format
@@ -371,7 +456,7 @@ public class ConnectDaemonService extends Service {
         if (i0>0) msgShow=msg.substring(0, i0);
         else if (idx>0) msgShow=msg.substring(0, idx);
         String chinese=getChinese(msgShow);
-        if (chinese==null)chinese="DAEMON STATUS";
+        if (chinese==null) chinese="DAEMON STATUS";
         if (msg.toLowerCase().indexOf("finish") > 0)
         {
             startDaemon();
@@ -576,8 +661,13 @@ public class ConnectDaemonService extends Service {
             if (param.charAt(0) != '-'){
                 String[] terms=param.split("-");
                 if (terms.length == 4){
-                   int iH=Integer.parseInt(terms[0].substring(0,2));
-                    int iM=Integer.parseInt(terms[0].substring(3,5));
+                    int icx=terms[0].indexOf(":");
+                    if (icx < 0) {
+                        last4=-1;
+                        return;
+                    }
+                   int iH=Integer.parseInt(terms[0].substring(0,icx));
+                    int iM=Integer.parseInt(terms[0].substring(icx+1));
                     GregorianCalendar gToday=new GregorianCalendar(TimeZone.getTimeZone(mContext.getResources().getString(R.string.my_time_zone_en)));
                     int iHr=gToday.get(Calendar.HOUR_OF_DAY);
                     int iMin=gToday.get(Calendar.MINUTE);

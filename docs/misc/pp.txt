@@ -1,0 +1,11 @@
+android.permission.SET_TIME_ZONE
+
+TextView textView = (TextView) dialog.findViewById(android.R.id.message);
+
+
+final int alertTitle = ctx.getResources().getIdentifier( "alertTitle", "id", "android" );
+setTitleFont( (TextView)dlg.findViewById( alertTitle ) );
+
+ int alertTitle = context.getResources().getIdentifier("alertTitle", "id", "android"); View title = dialog.findViewById(alertTitle); if (title != null && title instanceof TextView) { ((TextView) title).setTextSize(14); } 
+
+Ringtone ringtone = RingtoneManager.getRingtone(context, Settings.System.DEFAULT_RINGTONE_URI);

@@ -20,9 +20,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -54,12 +57,18 @@ public class MainActivity extends AppCompatActivity
         }
         else
             imNewUser=false;
-        Intent jIntent=new Intent(this, ConnectDaemonService.class);
-        //M1-00 (cool) or M1-01 (warm)
-        jIntent.putExtra(ConnectDaemonService.DAEMON_COMMAND, " ");
-        //Toast.makeText(this, "will send start command to server", Toast.LENGTH_LONG).show();
-        startService(jIntent); //just to make sure daemon is up and running
-
+        Intent myIntent=getIntent();
+        if (myIntent != null && myIntent.hasExtra("MCU_RESP"))
+        {
+            showLogData(ShowLogData.SHOW_LAST10);
+        }
+        else {
+            Intent jIntent = new Intent(this, ConnectDaemonService.class);
+            //M1-00 (cool) or M1-01 (warm)
+            jIntent.putExtra(ConnectDaemonService.DAEMON_COMMAND, " ");
+            //Toast.makeText(this, "will send start command to server", Toast.LENGTH_LONG).show();
+            startService(jIntent); //just to make sure daemon is up and running
+        }
     }
 
     static String pageTitle=null;
@@ -76,14 +85,14 @@ public class MainActivity extends AppCompatActivity
 
             if (myBar == null) return;
             int textSize=myBar.getHeight()/3;
-            myBar.setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP);
+            //myBar.setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP);
             myBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
-            myBar.setDisplayHomeAsUpEnabled(true);
+            //myBar.setDisplayHomeAsUpEnabled(true);
             View myBarView= getLayoutInflater().inflate(R.layout.actionbar_title, null);
             TextView textViewTitle = (TextView) myBarView.findViewById(R.id.myActionBarTitle);
-            textViewTitle.setText(newTitle);
+            textViewTitle.setText(" "+newTitle);
             if (textSize > 0) {
-                if (textSize > 30) textSize = 30;
+                if (textSize > 25) textSize = 25;
                 if (textSize < 10) textSize = 10;
                 textViewTitle.setTextSize(textSize);
             }
@@ -150,10 +159,12 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         AlertDialog alert;
+        TextView textView;
+        Button okB;
         switch (id)
         {
             case R.id.action_get_sim:
-                alert = builder.setMessage(getResources().getString(R.string.sim)+":"+getSavedValue(SET_SIM))
+                alert = builder.setMessage(getResources().getString(R.string.sim)+": "+getSavedValue(SET_SIM))
                         .setCancelable(false)
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
@@ -161,10 +172,14 @@ public class MainActivity extends AppCompatActivity
                             }
                         }).create();
                 alert.show();
+                textView = (TextView) alert.findViewById(android.R.id.message);
+                textView.setTextSize(40);
+                okB = (Button) alert.findViewById(android.R.id.button1);
+                okB.setTextSize(40);
                 break;
             case R.id.action_get_pin:
 
-                alert = builder.setMessage(getResources().getString(R.string.pin)+":"+getSavedValue(SET_PIN))
+                alert = builder.setMessage(getResources().getString(R.string.pin)+": "+getSavedValue(SET_PIN))
                         .setCancelable(false)
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
@@ -172,16 +187,46 @@ public class MainActivity extends AppCompatActivity
                             }
                         }).create();
                 alert.show();
+                textView = (TextView) alert.findViewById(android.R.id.message);
+                textView.setTextSize(40);
+                okB = (Button) alert.findViewById(android.R.id.button1);
+                okB.setTextSize(40);
                 break;
             case R.id.action_get_phones:
-                alert = builder.setMessage(getResources().getString(R.string.phone2)+":"+getSavedValue(SET_PHONE2))
+                String[] items=new String[2];
+                items[0] = getSavedValue(SET_PHONE1);
+                items[1]=getSavedValue(SET_PHONE2);
+                alert = builder.setTitle(getResources().getString(R.string.phone_numbers)+":")//+getSavedValue(SET_PHONE2))
+                        //.setMessage(items[0]+"      "+items[1])
                         .setCancelable(false)
+                        .setSingleChoiceItems(items, 0, new DialogInterface.OnClickListener(){
+                            public void onClick(DialogInterface d, int i){
+
+                            }
+                        })
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 //do things
                             }
                         }).create();
                 alert.show();
+                /*
+                int alertTitle = getResources().getIdentifier("alertTitle", "id", "android");
+                View title = alert.findViewById(alertTitle);
+                if (title != null && title instanceof TextView) {
+                    ((TextView) title).setTextSize(40);
+                }
+                //textView.setTextSize(40);
+                ListView lv=alert.getListView();
+                ListAdapter adp=(ListAdapter) alert.getListView().getAdapter();//findViewById(android.R.id.list);
+                textView = (TextView)lv.getChildAt(0);//)adp.getView(0,  null, lv);
+                textView.setTextSize(40);
+                textView.setTextColor(0xff0000);//android.R.color.holo_red_light);
+                textView = (TextView)lv.getChildAt(1);//adp.getView(1, null, lv);
+                textView.setTextSize(40);
+                okB = (Button) alert.findViewById(android.R.id.button1);
+                okB.setTextSize(40);
+                */
                 break;
             case R.id.action_get_recent1:
                 showLogData(ShowLogData.SHOW_NEWEST);
@@ -209,6 +254,12 @@ public class MainActivity extends AppCompatActivity
                             }
                         }).create();
                 alert.show();
+                textView = (TextView) alert.findViewById(android.R.id.message);
+                textView.setTextSize(40);
+                okB = (Button) alert.findViewById(android.R.id.button1);
+                okB.setTextSize(40);
+                okB = (Button) alert.findViewById(android.R.id.button2);
+                okB.setTextSize(40);
                 default:
 
                 break;
@@ -367,7 +418,7 @@ public class MainActivity extends AppCompatActivity
     {
         ((ReadPhoneFragment)mCurrentFragment).saveData();
         String pin=getSavedValue(SET_PIN);
-        String p1=getSavedValue(SET_PHONE1);
+        String p1=getSavedValue(PENDING_NEW_PHONE);//getSavedValue(SET_PHONE1);
         if (p1.charAt(0)=='-')
         {
             //closeFragment(v);
@@ -413,6 +464,7 @@ public class MainActivity extends AppCompatActivity
     {
         String command= "M1-01";
         sendCommandAndDone(command);
+        ((SetWarmerFragment)mCurrentFragment).backToMain();
        Toast.makeText(this, ConnectDaemonService.getChinese(command)+"指令已送出", Toast.LENGTH_LONG).show();
     }
 
@@ -443,26 +495,11 @@ public class MainActivity extends AppCompatActivity
 
     public void saveOneBootData(View v)
     {
-        ((SetOneBootFragment)mCurrentFragment).saveData();
-        /* need to set up on service to send command based on the saved parameter
-        year/month/day-hour:min-last4
-
-        String pin=getSavedValue(ONE_BOOT_PARAMS);
-        String p1=getSavedValue(SET_PHONE1);
-        String p2=getSavedValue(SET_PHONE2);
-        if (p1.charAt(0)=='-')
-        {
-            closeFragment(v);
-            return;
-        }
-        String command="M3-"+pin+"-"+p1+"-";
-        if (p2.charAt(0)!='-') command += p2;
-        sendCommandAndDone(command);
-         */
-        if (((SetOneBootFragment)mCurrentFragment).checkIfSaveConfirmed()) {
+        if (((SetOneBootFragment)mCurrentFragment).verifyAndSaveData())  {
             Toast.makeText(this, "定时启动指令已設定", Toast.LENGTH_LONG).show();
             sendCommandAndDone("NEW SCHEDULE");
         }
+        //((SetOneBootFragment)mCurrentFragment).backToMain();
     }
 
     public void pickTime(View v) {
@@ -543,10 +580,13 @@ public class MainActivity extends AppCompatActivity
     public void saveNBootData(View v)
     {
         ((SetOnOffBootFragment)mCurrentFragment).saveData();
-        if (((SetOnOffBootFragment)mCurrentFragment).checkIfSaveConfirmed()) {
-            Toast.makeText(this, "多次启动指令已設定", Toast.LENGTH_LONG).show();
-            sendCommandAndDone("NEW SCHEDULE");
-        }
+
+        ((SetOnOffBootFragment)mCurrentFragment).backToMain();
+
+        Toast.makeText(this, "多次启动指令已設定", Toast.LENGTH_LONG).show();
+
+
+        sendCommandAndDone("NEW SCHEDULE");
     }
     void setMultipleBoot()
     {
@@ -588,6 +628,7 @@ public class MainActivity extends AppCompatActivity
         i4=(i4>30)?30:i4;
         command += (new DecimalFormat("00")).format(i4);
         sendCommandAndDone(command);
+        ((StartEngineFragment)mCurrentFragment).backToMain();
         Toast.makeText(this, ConnectDaemonService.getChinese("M5")+"指令已送出", Toast.LENGTH_LONG).show();
     }
 
@@ -621,6 +662,7 @@ public class MainActivity extends AppCompatActivity
         //i4=(i4>30)?30:i4;
         //command += new DecimalFormat("0#").format(i4);
         sendCommandAndDone(command);
+        ((StopEngineFragment)mCurrentFragment).backToMain();
         Toast.makeText(this, ConnectDaemonService.getChinese(command)+"指令已送出", Toast.LENGTH_LONG).show();
     }
     void stopNow()
@@ -651,6 +693,7 @@ public class MainActivity extends AppCompatActivity
     public static final String SET_PHONE1="set_phone_1";
     public static final String SET_PHONE2="set_phone_2";
     public static final String GET_PHONE_OLD="get_phone_old";
+    public static final String PENDING_NEW_PHONE="pending_phone";
     public static final String SET_WARMER="select_warmer_cooler";
     public static final String SET_ONE_BOOT="set_one_boot";
     public static final String SET_MULTIPLE_BOOT="set_multiple_boot";

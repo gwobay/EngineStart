@@ -27,6 +27,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -46,6 +47,9 @@ public class ShowLogData extends MySimpleFragment {
     private static void buildCodeDictionary() {
         if (mcuDictionary!=null) return;
         mcuDictionary=new HashMap<String, String>();
+
+        mcuDictionary.put("DAEMON GONE","通信系统结束");
+
         mcuDictionary.put("M1-00","冷气启动");
         mcuDictionary.put("M1-01","暖气启动");
         mcuDictionary.put("M2","车载机密码更换");
@@ -104,7 +108,7 @@ public class ShowLogData extends MySimpleFragment {
     {
         return 0;
     }
-
+    public static final DecimalFormat dF=new DecimalFormat("00");
     public static final int SHOW_FAILED1=11;
     public static final int SHOW_FAILED10=101;
     public static final int SHOW_NEWEST=10;
@@ -149,8 +153,10 @@ public class ShowLogData extends MySimpleFragment {
             GregorianCalendar gDate=new GregorianCalendar(TimeZone.getTimeZone("Hongkong"));
             if (eTime > 0)
             gDate.setTimeInMillis(eTime);
-            String sTime=gDate.get(Calendar.YEAR)+"/"+(gDate.get(Calendar.MONTH)+1)+"/"+gDate.get(Calendar.DAY_OF_MONTH)+" ";
-            sTime += gDate.get(Calendar.HOUR_OF_DAY)+":"+gDate.get(Calendar.MINUTE);
+            String sTime=gDate.get(Calendar.YEAR)+"/"+
+                    dF.format(gDate.get(Calendar.MONTH) + 1)+"/"+
+                    dF.format(gDate.get(Calendar.DAY_OF_MONTH))+" ";
+            sTime += dF.format(gDate.get(Calendar.HOUR_OF_DAY))+":"+dF.format(gDate.get(Calendar.MINUTE));
             String msg=aRow.get("message");
             String chinese;
             String key=msg;

@@ -8,42 +8,44 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal|right">
+        android:layout_gravity="center_horizontal|right"
+        android:layout_weight="0.5">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="170dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.06"
             android:layout_gravity="left"
             android:id="@+id/label_last4"
             android:textColor="#ffffff00"
-            android:textSize="25dp"
-            android:text="@string/one_boot_active_period" />
+            android:textSize="30dp"
+            android:text="@string/one_boot_active_period"
+            android:gravity="center_vertical" />
 
         <EditText
-            android:layout_width="78dp"
+            android:layout_width="70dp"
             android:layout_height="wrap_content"
             android:inputType="number"
             android:textColor="#ffff5e3e"
             android:ems="30"
             android:id="@+id/last4_now"
-            android:gravity="left"
-            android:layout_gravity="left"
+            android:gravity="center_vertical"
             android:background="#fff6ff22"
             android:textSize="30dp"
             android:numeric="integer"
-            android:text="10" />
+            android:text="10"
+            android:layout_weight="0.2"
+            android:layout_gravity="center" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0.1"
-            android:layout_gravity="left|bottom"
+            android:layout_weight="0.2"
             android:id="@+id/editText7"
             android:text="@string/minute"
             android:textColor="#ffffff00"
-            android:textSize="20dp"
-            android:gravity="center_horizontal" />
+            android:textSize="30dp"
+            android:gravity="center_horizontal"
+            android:layout_gravity="center_vertical" />
 
     </LinearLayout>
     <View
@@ -65,7 +67,7 @@
         android:focusable="true"
         android:paddingBottom="10dp"
         android:button="@android:color/holo_orange_light"
-        android:background="@drawable/shape_oval_orange_large"
+        android:background="@drawable/shape_oval_green_large"
         android:enabled="true"
         android:textSize="30dp"
         android:onClick="startEngine" />
@@ -82,7 +84,7 @@
         android:id="@+id/return_to_main"
         android:layout_gravity="center_horizontal"
         android:textStyle="bold|italic"
-        android:background="@drawable/shape_oval_green"
+        android:background="@drawable/shape_oval_orange"
         android:gravity="center"
         android:textSize="30dp"
         android:onClick="closeFragment"

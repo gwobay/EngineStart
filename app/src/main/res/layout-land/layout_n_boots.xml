@@ -60,7 +60,8 @@
                 android:background="#fff6ff22"
                 android:textSize="30dp"
                 android:layout_gravity="center_horizontal"
-                android:layout_weight="0.2" />
+                android:layout_weight="0.2"
+                android:text="15" />
 
             <TextView
                 android:layout_width="25dp"
@@ -97,11 +98,12 @@
                 android:textColor="#ffff5e3e"
                 android:ems="30"
                 android:id="@+id/idle_period"
-                android:gravity="top"
+                android:gravity="top|center"
                 android:layout_gravity="center"
                 android:background="#fff6ff22"
                 android:textSize="30dp"
-            android:layout_weight="0.2" />
+            android:layout_weight="0.2"
+            android:text="1" />
 
             <TextView
                 android:layout_width="18dp"
@@ -183,8 +185,8 @@
             android:text="@string/cancel"
             android:id="@+id/no_change"
             android:gravity="center"
-            android:textColor="#ff25c0ff"
-            android:background="#fff4ff17"
+            android:textColor="@android:color/black"
+            android:background="@android:color/holo_orange_dark"
             android:alpha="0.8"
             android:capitalize="none"
             android:clickable="true"

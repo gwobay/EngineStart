@@ -603,6 +603,7 @@ public class SetWarmerFragment extends MySimpleFragment {
 	@Override
 	public void saveData()
 	{
+		/*
 		String old1=MainActivity.GET_PHONE_OLD;//getResources().getString(R.string.old_pin);
 		String oldPhone=((MainActivity)getActivity()).getSavedValue(old1);
 		((MainActivity)getActivity()).setPreferenceValue(old1, oldPhone);
@@ -613,7 +614,7 @@ public class SetWarmerFragment extends MySimpleFragment {
 
 		((MainActivity)getActivity()).setPreferenceValue(key1, phone1);
 		((MainActivity)getActivity()).setPreferenceValue(key2, phone2);
-
+*/
         backToMain();
 	}
 

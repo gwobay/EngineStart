@@ -23,7 +23,7 @@
         android:focusable="true"
         android:paddingBottom="10dp"
         android:button="@android:color/holo_orange_light"
-        android:background="@drawable/shape_oval_orange_large"
+        android:background="@drawable/shape_oval_green_large"
         android:enabled="true"
         android:textSize="30dp"
         android:onClick="stopEngine" />
@@ -40,7 +40,7 @@
         android:id="@+id/return_to_main"
         android:layout_gravity="center_horizontal"
         android:textStyle="bold|italic"
-        android:background="@drawable/shape_oval_green"
+        android:background="@drawable/shape_oval_orange"
         android:gravity="center"
         android:textSize="30dp"
         android:onClick="closeFragment"

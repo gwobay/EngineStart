@@ -26,6 +26,7 @@
             <string name="sim">车载机号码</string>
             <string name="pin">车载机密码</string>
             <string name="phone2">手机号码</string>
+    <string name="phone_numbers">手机号码</string>
     <string name="action_get_recent1">查询最近1筆启动记录</string>
     <string name="action_get_recent10">查询最近10筆记录</string>
     <string name="action_get_failed10">查询最近10筆失敗记录</string>
@@ -174,6 +175,10 @@
         <item>五</item>
         <item>六</item>
     </string-array>
+    <!-- log related /-->
+    <string name="daemon_done">通信系统结束</string>
+
+    <!-- end of log /-->
     <string name="abc_action_bar_home_description">转到主屏幕</string>
     <string name="abc_action_bar_home_description_format">%1$s：%2$s</string>
     <string name="abc_action_bar_home_subtitle_description_format">%1$s - %2$s：%3$s</string>

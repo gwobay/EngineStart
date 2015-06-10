@@ -138,7 +138,7 @@ public class SetOnOffBootFragment extends MySimpleFragment {
 
 		saveConfirmed=true;
 
-		backToMain();
+		//backToMain();
 
 	}
 

@@ -26,6 +26,8 @@
     <string name="sim">车载机号码</string>
     <string name="pin">车载机密码</string>
     <string name="phone2">手机号码</string>
+    <string name="phone_numbers">手机号码</string>
+
     <string name="action_get_recent1">查询最近1筆启动记录</string>
     <string name="action_get_recent10">查询最近10筆记录</string>
     <string name="action_get_failed10">查询最近10筆失敗记录</string>
@@ -140,6 +142,11 @@
 
     <string name="return_home">转回主屏幕</string>
     <!-- end  engine / boot 1 or N/-->
+    <!-- log related /-->
+    <string name="daemon_done">通信系统结束</string>
+
+    <!-- end of log /-->
+
     <string-array name="pick_year">
         <item>15</item>
         <item>16</item>

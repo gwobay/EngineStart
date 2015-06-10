@@ -41,8 +41,12 @@
     <string name="label_get_sim">ENTER_SIMM</string>
     <string name="label_get_pin">ENTER_PIN</string>
     <string name="label_get_phone">ENTER_PHONE</string>
+    <string name="phone_numbers">phone numbers</string>
 
+    <!-- log related /-->
+    <string name="daemon_done">daemon done</string>
 
+    <!-- end of log /-->
     <string name="sim_setting">haha</string>
     <string name="pin_setting">haha</string>
     <string name="phone_numbers_setting">haha</string>

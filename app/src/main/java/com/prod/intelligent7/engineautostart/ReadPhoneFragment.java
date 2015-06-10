@@ -608,7 +608,7 @@ public class ReadPhoneFragment extends MySimpleFragment {
 		String old1=MainActivity.GET_PHONE_OLD;//getResources().getString(R.string.old_pin);
 		String oldPhone=((MainActivity)getActivity()).getSavedValue(old1);
 		((MainActivity)getActivity()).setPreferenceValue(old1, oldPhone);
-		String key1=MainActivity.SET_PHONE1;
+		String key1=MainActivity.PENDING_NEW_PHONE;//SET_PHONE1;
 		String phone1=((EditText) mRootView.findViewById(R.id.phone1)).getText().toString();
 		String key2=MainActivity.SET_PHONE2;
 		String phone2=((EditText) mRootView.findViewById(R.id.phone2)).getText().toString();
@@ -625,8 +625,10 @@ public class ReadPhoneFragment extends MySimpleFragment {
 	            Bundle savedInstanceState) 
 	 {
 		 mRootView=inflater.inflate(R.layout.phone_entry_layout, container, false);
-
-
+		 String p1=MainActivity.SET_PHONE1;
+		 ((EditText) mRootView.findViewById(R.id.phone1)).setText(((MainActivity)getActivity()).getSavedValue(p1));
+		 String p2=MainActivity.SET_PHONE2;
+		 ((EditText) mRootView.findViewById(R.id.phone2)).setText(((MainActivity)getActivity()).getSavedValue(p2));
 		 return mRootView;
 	 }
 

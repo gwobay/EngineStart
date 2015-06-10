@@ -99,10 +99,11 @@
             android:textColor="#ffff5e3e"
             android:ems="30"
             android:id="@+id/one_boot_last4"
-            android:gravity="left"
             android:layout_gravity="center"
             android:background="#fff6ff22"
-            android:textSize="30dp" />
+            android:textSize="30dp"
+            android:text="15"
+            android:gravity="center" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -160,8 +161,8 @@
             android:id="@+id/neglect_phone_entry"
             android:gravity="center"
             android:layout_weight="0.5"
-            android:textColor="#ff25c0ff"
-            android:background="#fff46f57"
+            android:textColor="@android:color/black"
+            android:background="@android:color/holo_orange_dark"
             android:alpha="0.8"
             android:capitalize="words"
             android:clickable="true"

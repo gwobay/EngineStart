@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
+import android.media.audiofx.AudioEffect;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,14 +62,18 @@ public class TcpConnectDaemon extends Thread
 	ArrayBlockingQueue<String> socketInDataQ ;
 	HashMap<String, ArrayBlockingQueue<String> > friendQ ;
 	//PostOffice myPostOffice;
-	final int Q_SIZE=20;
+	public static final int Q_SIZE=20;
 
 	int mHeartBeatInterval;
 	//can be changed in file
 	int myMODE;
-	public static int MODE_REPEAT=1440;
+	public static int MODE_REPEAT=8440;
 	public static int MODE_ONCE=1;
 	public static int MODE_COUNT=10;
+
+	public interface StatusChangeListener {
+		public void onDaemonDying();//to inform service if need new one
+	}
 
 	Vector<DataUpdateListener> sniffers;
 	
@@ -140,6 +145,13 @@ public class TcpConnectDaemon extends Thread
 		myMODE=mode;
 		mHeartBeatInterval=interval;
 	}
+	Vector<StatusChangeListener> myListeners;
+	public void addListener(StatusChangeListener who)
+	{
+		if (myListeners == null)
+			myListeners = new Vector<StatusChangeListener>();
+		myListeners.add(who);
+	}
 	public void attachToService(Service who)
 	{
 		mContext=who;
@@ -149,7 +161,7 @@ public class TcpConnectDaemon extends Thread
 		outBoundDataDataQ=newQ;
 	}
 
-	public ArrayBlockingQueue<String> getOutDataQ()
+	public ArrayBlockingQueue<String> getOutBoundDataQ()
 	{
 
 		if (outBoundDataDataQ==null)
@@ -360,8 +372,8 @@ public class TcpConnectDaemon extends Thread
 			String[] terms=msg.split("-"); //M6-ip-port
 			mHost=terms[1];
 			mPort=Integer.parseInt(terms[2]);
-			String fileName=MainActivity.package_name+".profile";//getApplication().getPackageName()+".profile";
-			SharedPreferences mSPF = mContext.getSharedPreferences(fileName, Context.MODE_PRIVATE);
+			//String fileName=MainActivity.package_name+".profile";//getApplication().getPackageName()+".profile";
+			SharedPreferences mSPF = mContext.getSharedPreferences(ConnectDaemonService.ramFileName, Context.MODE_PRIVATE);
 			SharedPreferences.Editor editor = mSPF.edit();//prefs.edit();
 			//String pwd=MainActivity.SET_PIN;//getResources().getString(R.string.pin_setting);
 			editor.putString(ConnectDaemonService.SERVER_IP, mHost);
@@ -379,12 +391,22 @@ public class TcpConnectDaemon extends Thread
 		idx=msg.indexOf('@');
 		if (idx < 0) {
 			log.warning(sData + " !!Data has no time stamp");
-			return;
 		}
 		else {
 			String senderTime=msg.substring(idx+1);
 			log.warning(sData + "delayed by " + (new Date().getTime() - Long.parseLong(senderTime)));
-			return;
+		}
+
+		if (msg.substring(0,4).equalsIgnoreCase("S300")){
+			//String fileName=MainActivity.package_name+".profile";//getApplication().getPackageName()+".profile";
+			SharedPreferences mSPF = mContext.getSharedPreferences(ConnectDaemonService.ramFileName, Context.MODE_PRIVATE);
+			String okP=mSPF.getString(MainActivity.PENDING_NEW_PHONE, "--");
+			if (okP.charAt(0)!='-') {
+				SharedPreferences.Editor editor = mSPF.edit();//prefs.edit();
+				//String pwd=MainActivity.SET_PIN;//getResources().getString(R.string.pin_setting);
+				editor.putString(MainActivity.SET_PHONE1, okP);
+				editor.commit();
+			}
 		}
 		
 	}
@@ -393,24 +415,27 @@ public class TcpConnectDaemon extends Thread
 	{
 		
 	}
-	
+
 	public void putOutBoundMsg(String msg)
 	{
 		final String outMsg=msg;
-		getOutDataQ();
+		final TcpConnectDaemon toWakeUp=this;
+		getOutBoundDataQ();
 		new Thread(new Runnable(){
-			public void run(){
-				
-		if (outBoundDataDataQ.size() > Q_SIZE){
-			log.warning("Warning : too many msg in my Q");
-			return;
-		}
-		try {
-			outBoundDataDataQ.put(outMsg);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			public void run()
+			{
+				if (outBoundDataDataQ.size() == Q_SIZE){
+					log.warning("Warning : too many msg in my Q");
+					return;
+				}
+				try {
+					outBoundDataDataQ.put(outMsg);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				toWakeUp.hasCommand=true;
+				toWakeUp.interrupt();
 			}
 		}).start();
 	}
@@ -507,7 +532,7 @@ public class TcpConnectDaemon extends Thread
 	public void wakeUp4Command()
 	{
 		hasCommand=true;
-		interrupt();
+		//interrupt();
 	}
 	Thread writeThread;
 	void startWriteThread()
@@ -521,6 +546,21 @@ public class TcpConnectDaemon extends Thread
 		writeThread.start();
 	}
 
+	void thisDying()
+	{
+		//imDone=true;
+		for (int i=0; i<myListeners.size(); i++) {
+			final StatusChangeListener aL=myListeners.get(i);
+			if (aL==null) continue;
+			new Thread(new Runnable() {
+				@Override
+				public void run() {
+					aL.onDaemonDying();
+				}
+			}).start();
+		}
+		return;
+	}
 	boolean imDone;
 	int iSuccessful=0;
 	public void run()
@@ -534,7 +574,7 @@ public class TcpConnectDaemon extends Thread
 				if (wait30)
 				{
 					try {
-						sleep(30*000);
+						sleep(10*000);
 					} catch(InterruptedException e){
 
 					}
@@ -544,7 +584,8 @@ public class TcpConnectDaemon extends Thread
 				//mySimIccId .charAt(0) != '-')
 			//iCanStart=true;
 			do  {
-				String fileName=MainActivity.package_name+".profile";SharedPreferences mSPF = mContext.getSharedPreferences(fileName, Context.MODE_PRIVATE);
+				//String fileName=MainActivity.package_name+".profile";
+				SharedPreferences mSPF = mContext.getSharedPreferences(ConnectDaemonService.ramFileName, Context.MODE_PRIVATE);
 				myName = mSPF.getString(MainActivity.SET_PHONE1, "--");//key, value);
 				myNickName = mSPF.getString(MainActivity.SET_PHONE2, "--");//key, value);
 				mySimIccId = mSPF.getString(MainActivity.SET_SIM, "--");//key, value);
@@ -616,6 +657,8 @@ public class TcpConnectDaemon extends Thread
 
 		} while (!imDone);
 		((ConnectDaemonService)mContext).sendNotification("Daemon finishes "+iSuccessful+" jobs and gone");
+		saveMyDataToDb("DAEMON GONE");
+		thisDying();
 	}
 	/* databse staff starts here
 	*

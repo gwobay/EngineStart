@@ -92,7 +92,7 @@ public class MySimpleFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // retain this fragment
-        setRetainInstance(true);
+        //setRetainInstance(true);
         if (savedInstanceState != null)
             restoreInstanceState(savedInstanceState);
     }
@@ -117,10 +117,14 @@ public class MySimpleFragment extends Fragment {
         //mAc.setContentView(R.layout.activity_main);
         if (mAc.mainUI!=null){
             LinearLayout aL= (LinearLayout)mAc.mainUI.getView();
-            aL.removeAllViews();
-            LinearLayout newV=((MainActivityFragment)mAc.mainUI).repaintButtons();
-            aL.addView(newV);
+            if (aL != null) {
+                aL.removeAllViews();
+                LinearLayout newV = ((MainActivityFragment) mAc.mainUI).repaintButtons();
+                aL.addView(newV);
+            }
         }
+
+        mAc.setDefaultTitle();
 
     }
 

@@ -1,9 +1,16 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        signed_apk {
+            keyAlias 'chinlin birthday'
+            keyPassword 'o1o1h3a0y'
+            storeFile file('C:/Users/eric/Downloads/EngineStart/my_key.jks')
+            storePassword 'o1o1h3a0y'
+        }
+    }
     compileSdkVersion 22
     buildToolsVersion "22.0.1"
-
     defaultConfig {
         applicationId "com.prod.intelligent7.engineautostart"
         minSdkVersion 15
@@ -25,6 +32,6 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:22.1.1'
 }

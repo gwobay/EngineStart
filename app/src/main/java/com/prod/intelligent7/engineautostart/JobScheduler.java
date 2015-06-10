@@ -37,7 +37,7 @@ public class JobScheduler extends Thread{
     protected long last4;
     protected long end_time;
     protected String myToken;
-    TcpConnectDaemon workDaemon;
+    protected TcpConnectDaemon workDaemon;
     boolean killScheduledJob;
     public JobScheduler(Context cx, TcpConnectDaemon dm){
         mContext=cx;
@@ -57,10 +57,10 @@ public class JobScheduler extends Thread{
     }
     protected void sendStartCommand(long forHowLong){
         if (forHowLong > 0)
-        workDaemon.putOutBoundMsg("M5-"+new DecimalFormat("00").format(forHowLong)); //in minute
+            ((ConnectDaemonService)mContext).putInDaemonOutboundQ("M5-" + new DecimalFormat("00").format(forHowLong)); //in minute
     }
     protected void sendStopCommand(){
-        workDaemon.putOutBoundMsg("M4-00");
+        ((ConnectDaemonService)mContext).putInDaemonOutboundQ("M4-00");
     }
 
     protected void readParameter()

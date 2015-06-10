@@ -642,6 +642,35 @@ public class SetOneBootFragment extends MySimpleFragment {
 
 			((MainActivity) mActivity).setPreferenceValue(MainActivity.ONE_BOOT_PARAMS, bootParam);
 			saveConfirmed=true;
+			//backToMain();
+		}
+		else {
+			saveConfirmed=false;
+			Toast.makeText(mActivity, getResources().getString(R.string.bad_data_entry),
+					Toast.LENGTH_LONG).show();
+			if(sDate != null && sDate.length() > 10) dateV.requestFocus();
+			else if(sTime != null && sTime.length() > 5) timeV.requestFocus();
+			else last4V.requestFocus();
+		}
+	}
+
+	public boolean verifyAndSaveData()
+	{
+		View rootV=mRootView;
+		View dateV=rootV.findViewById(R.id.one_boot_pick_date);
+		String sDate=((TextView)dateV).getText().toString();
+		View timeV=rootV.findViewById(R.id.one_boot_pick_time);
+		String sTime=((TextView)timeV).getText().toString();
+		EditText last4V=(EditText)rootV.findViewById(R.id.one_boot_last4);
+		String sLast4=last4V.getText().toString();
+		saveConfirmed=false;
+		if (sDate != null && sDate.length() > 9 &&
+				sTime != null && sTime.length() > 4 &&
+				sLast4 != null && sLast4.length() > 0) {
+			String bootParam = sDate + "-" + sTime + "-" + sLast4;
+
+			((MainActivity) mActivity).setPreferenceValue(MainActivity.ONE_BOOT_PARAMS, bootParam);
+			saveConfirmed=true;
 			backToMain();
 		}
 		else {
@@ -652,6 +681,7 @@ public class SetOneBootFragment extends MySimpleFragment {
 			else if(sTime != null && sTime.length() > 5) timeV.requestFocus();
 			else last4V.requestFocus();
 		}
+		return saveConfirmed;
 	}
 
 	boolean saveConfirmed;
